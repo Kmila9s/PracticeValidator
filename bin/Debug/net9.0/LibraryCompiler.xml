@@ -1,0 +1,791 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LibraryCompiler</name>
+    </assembly>
+    <members>
+        <member name="T:LibraryCompiler.Repositories.CompiledLibrary">
+            <summary>
+            One compiled library — what a build pass returns to the consumer.
+            Pure data: the function names, the (eventual) parsed bodies, the
+            content hash for cache key derivation, plus diagnostics produced
+            during the build.
+            </summary>
+            <param name="LibraryName">Same value as the input <see cref="P:LibraryCompiler.Repositories.LibrarySource.LibraryName"/>.</param>
+            <param name="Vendor">Same value as <see cref="P:LibraryCompiler.Repositories.LibrarySource.Vendor"/>.</param>
+            <param name="ContentHash">
+            SHA-256 of the source bytes that were compiled. Used as the cache key
+            under the Persistent build policy and as the staleness check when
+            re-resolving across sessions.
+            </param>
+            <param name="Functions">
+            Public function / procedure signatures the library exposes. v1 holds
+            names + package tags only; v2 (queued) replaces this with parsed bodies.
+            </param>
+            <param name="Diagnostics">
+            Any warnings or errors the build produced. Stable code strings (e.g.
+            <c>VHD-FUNC-BLACKBOX</c>) so the editor can match them to documentation.
+            </param>
+        </member>
+        <member name="M:LibraryCompiler.Repositories.CompiledLibrary.#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibrarySymbol},System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibraryDiagnostic})">
+            <summary>
+            One compiled library — what a build pass returns to the consumer.
+            Pure data: the function names, the (eventual) parsed bodies, the
+            content hash for cache key derivation, plus diagnostics produced
+            during the build.
+            </summary>
+            <param name="LibraryName">Same value as the input <see cref="P:LibraryCompiler.Repositories.LibrarySource.LibraryName"/>.</param>
+            <param name="Vendor">Same value as <see cref="P:LibraryCompiler.Repositories.LibrarySource.Vendor"/>.</param>
+            <param name="ContentHash">
+            SHA-256 of the source bytes that were compiled. Used as the cache key
+            under the Persistent build policy and as the staleness check when
+            re-resolving across sessions.
+            </param>
+            <param name="Functions">
+            Public function / procedure signatures the library exposes. v1 holds
+            names + package tags only; v2 (queued) replaces this with parsed bodies.
+            </param>
+            <param name="Diagnostics">
+            Any warnings or errors the build produced. Stable code strings (e.g.
+            <c>VHD-FUNC-BLACKBOX</c>) so the editor can match them to documentation.
+            </param>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.CompiledLibrary.LibraryName">
+            <summary>Same value as the input <see cref="P:LibraryCompiler.Repositories.LibrarySource.LibraryName"/>.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.CompiledLibrary.Vendor">
+            <summary>Same value as <see cref="P:LibraryCompiler.Repositories.LibrarySource.Vendor"/>.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.CompiledLibrary.ContentHash">
+            <summary>
+            SHA-256 of the source bytes that were compiled. Used as the cache key
+            under the Persistent build policy and as the staleness check when
+            re-resolving across sessions.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.CompiledLibrary.Functions">
+            <summary>
+            Public function / procedure signatures the library exposes. v1 holds
+            names + package tags only; v2 (queued) replaces this with parsed bodies.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.CompiledLibrary.Diagnostics">
+            <summary>
+            Any warnings or errors the build produced. Stable code strings (e.g.
+            <c>VHD-FUNC-BLACKBOX</c>) so the editor can match them to documentation.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Repositories.LibrarySymbol">
+            <summary>One public symbol from a compiled library.</summary>
+            <param name="Name">Symbol identifier (case-insensitive in VHDL).</param>
+            <param name="Kind">What kind of symbol — function, procedure, type, constant, …</param>
+            <param name="IsBlackbox">
+            True when the compiler accepted the declaration but doesn't yet have a
+            real synthesizable body. v1 is all-blackbox; v2 lowers to primitives.
+            </param>
+        </member>
+        <member name="M:LibraryCompiler.Repositories.LibrarySymbol.#ctor(System.String,LibraryCompiler.Repositories.LibrarySymbolKind,System.Boolean)">
+            <summary>One public symbol from a compiled library.</summary>
+            <param name="Name">Symbol identifier (case-insensitive in VHDL).</param>
+            <param name="Kind">What kind of symbol — function, procedure, type, constant, …</param>
+            <param name="IsBlackbox">
+            True when the compiler accepted the declaration but doesn't yet have a
+            real synthesizable body. v1 is all-blackbox; v2 lowers to primitives.
+            </param>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySymbol.Name">
+            <summary>Symbol identifier (case-insensitive in VHDL).</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySymbol.Kind">
+            <summary>What kind of symbol — function, procedure, type, constant, …</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySymbol.IsBlackbox">
+            <summary>
+            True when the compiler accepted the declaration but doesn't yet have a
+            real synthesizable body. v1 is all-blackbox; v2 lowers to primitives.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Repositories.LibrarySymbolKind">
+            <summary>Categories of symbol a library can publish.</summary>
+        </member>
+        <member name="F:LibraryCompiler.Repositories.LibrarySymbolKind.Function">
+            <summary>Subprogram returning a value (functions).</summary>
+        </member>
+        <member name="F:LibraryCompiler.Repositories.LibrarySymbolKind.Procedure">
+            <summary>Subprogram with side effects (procedures).</summary>
+        </member>
+        <member name="F:LibraryCompiler.Repositories.LibrarySymbolKind.Type">
+            <summary>Type or subtype declaration (std_logic, unsigned, …).</summary>
+        </member>
+        <member name="F:LibraryCompiler.Repositories.LibrarySymbolKind.Constant">
+            <summary>Constant declaration.</summary>
+        </member>
+        <member name="T:LibraryCompiler.Repositories.LibraryDiagnostic">
+            <summary>Build-time diagnostic emitted by the library compiler.</summary>
+            <param name="Severity">Info, Warning, or Error.</param>
+            <param name="Code">Stable code string (e.g. <c>LIB-PARSE-FAIL</c>).</param>
+            <param name="Subject">The library / symbol the diagnostic is about.</param>
+            <param name="Message">Human-readable explanation.</param>
+        </member>
+        <member name="M:LibraryCompiler.Repositories.LibraryDiagnostic.#ctor(LibraryCompiler.Repositories.LibraryDiagnosticSeverity,System.String,System.String,System.String)">
+            <summary>Build-time diagnostic emitted by the library compiler.</summary>
+            <param name="Severity">Info, Warning, or Error.</param>
+            <param name="Code">Stable code string (e.g. <c>LIB-PARSE-FAIL</c>).</param>
+            <param name="Subject">The library / symbol the diagnostic is about.</param>
+            <param name="Message">Human-readable explanation.</param>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibraryDiagnostic.Severity">
+            <summary>Info, Warning, or Error.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibraryDiagnostic.Code">
+            <summary>Stable code string (e.g. <c>LIB-PARSE-FAIL</c>).</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibraryDiagnostic.Subject">
+            <summary>The library / symbol the diagnostic is about.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibraryDiagnostic.Message">
+            <summary>Human-readable explanation.</summary>
+        </member>
+        <member name="T:LibraryCompiler.Repositories.LibraryDiagnosticSeverity">
+            <summary>Severity buckets matching the editor's marker levels.</summary>
+        </member>
+        <member name="T:LibraryCompiler.Repositories.LibrarySource">
+            <summary>
+            Descriptor for one VHDL library the host wants the compiler to make
+            available. Holds enough information to (a) identify the library by name
+            for <c>use X.Y.all</c> resolution, (b) locate its source bytes through
+            a host-supplied callback, and (c) order builds correctly when one
+            library depends on another.
+            </summary>
+            <param name="LibraryName">
+            Logical name as it appears in user code (e.g. <c>std_logic_1164</c>,
+            <c>numeric_std</c>, <c>my_crc_pkg</c>). Case-insensitive matched.
+            </param>
+            <param name="Vendor">
+            Library vendor / namespace. Defaults to <c>"IEEE"</c> for the bundled
+            builtins; user libraries typically use <c>"WORK"</c> or a project name.
+            </param>
+            <param name="SourceKey">
+            Opaque key the compiler hands back to the host's
+            <see cref="!:LibraryCompilerOptions.OpenLibrarySource"/> callback when it
+            wants the source bytes. The host decides whether this is a relative
+            path, an embedded-resource name, an absolute file path, or anything
+            else — the compiler treats it as a black box string.
+            </param>
+            <param name="DependsOn">
+            Other library names this library expects to resolve before it builds.
+            <c>numeric_std</c> declares <c>std_logic_1164</c> here so the
+            orchestrator can topologically sort the build queue.
+            </param>
+        </member>
+        <member name="M:LibraryCompiler.Repositories.LibrarySource.#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Descriptor for one VHDL library the host wants the compiler to make
+            available. Holds enough information to (a) identify the library by name
+            for <c>use X.Y.all</c> resolution, (b) locate its source bytes through
+            a host-supplied callback, and (c) order builds correctly when one
+            library depends on another.
+            </summary>
+            <param name="LibraryName">
+            Logical name as it appears in user code (e.g. <c>std_logic_1164</c>,
+            <c>numeric_std</c>, <c>my_crc_pkg</c>). Case-insensitive matched.
+            </param>
+            <param name="Vendor">
+            Library vendor / namespace. Defaults to <c>"IEEE"</c> for the bundled
+            builtins; user libraries typically use <c>"WORK"</c> or a project name.
+            </param>
+            <param name="SourceKey">
+            Opaque key the compiler hands back to the host's
+            <see cref="!:LibraryCompilerOptions.OpenLibrarySource"/> callback when it
+            wants the source bytes. The host decides whether this is a relative
+            path, an embedded-resource name, an absolute file path, or anything
+            else — the compiler treats it as a black box string.
+            </param>
+            <param name="DependsOn">
+            Other library names this library expects to resolve before it builds.
+            <c>numeric_std</c> declares <c>std_logic_1164</c> here so the
+            orchestrator can topologically sort the build queue.
+            </param>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySource.LibraryName">
+            <summary>
+            Logical name as it appears in user code (e.g. <c>std_logic_1164</c>,
+            <c>numeric_std</c>, <c>my_crc_pkg</c>). Case-insensitive matched.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySource.Vendor">
+            <summary>
+            Library vendor / namespace. Defaults to <c>"IEEE"</c> for the bundled
+            builtins; user libraries typically use <c>"WORK"</c> or a project name.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySource.SourceKey">
+            <summary>
+            Opaque key the compiler hands back to the host's
+            <see cref="!:LibraryCompilerOptions.OpenLibrarySource"/> callback when it
+            wants the source bytes. The host decides whether this is a relative
+            path, an embedded-resource name, an absolute file path, or anything
+            else — the compiler treats it as a black box string.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Repositories.LibrarySource.DependsOn">
+            <summary>
+            Other library names this library expects to resolve before it builds.
+            <c>numeric_std</c> declares <c>std_logic_1164</c> here so the
+            orchestrator can topologically sort the build queue.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.InMemoryBlobStore">
+            <summary>
+            In-process dictionary-backed blob store. Useful for tests and for hosts
+            that want session-scoped persistence without touching disk.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.InMemoryBlobStore.ExistsAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.InMemoryBlobStore.ReadAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.InMemoryBlobStore.WriteAsync(System.String,System.Byte[],System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.InMemoryBlobStore.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.InMemoryBlobStore.EnumerateKeysAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LibraryCompiler.Services.NullBlobStore">
+            <summary>
+            No-op blob store. Use as the cache when persistence is disabled —
+            every read returns <c>null</c>, every write is silently dropped. The
+            compiler treats this as equivalent to "no cache available" and
+            behaves under the OnDemand or ProcessCached policies accordingly.
+            </summary>
+        </member>
+        <member name="F:LibraryCompiler.Services.NullBlobStore.Instance">
+            <summary>Singleton instance (the store is stateless).</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.NullBlobStore.ExistsAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.NullBlobStore.ReadAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.NullBlobStore.WriteAsync(System.String,System.Byte[],System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.NullBlobStore.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LibraryCompiler.Services.NullBlobStore.EnumerateKeysAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LibraryCompiler.Services.BuildExecutionMode">
+            <summary>
+            How the orchestrator runs builds. Linear is deterministic and the
+            default; Parallel kicks each library off on a Task.Run with bounded
+            concurrency so large multi-library projects don't blow the
+            workstation-GC budget.
+            </summary>
+        </member>
+        <member name="F:LibraryCompiler.Services.BuildExecutionMode.Linear">
+            <summary>One library at a time, in topological order.</summary>
+        </member>
+        <member name="F:LibraryCompiler.Services.BuildExecutionMode.Parallel">
+            <summary>Concurrent build, bounded by <see cref="P:LibraryCompiler.Services.BuildOrchestrator.MaxParallelism"/>.</summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.BuildOrchestrator">
+            <summary>
+            Drives the full build pass: resolve names, walk the dependency DAG,
+            dispatch each library through <see cref="T:LibraryCompiler.Services.LibraryBuilder"/>, honour the
+            <see cref="T:LibraryCompiler.Services.LibraryBuildPolicy"/>, and consult the host's
+            <see cref="T:LibraryCompiler.Services.IBlobStore"/> for persistence under
+            <see cref="F:LibraryCompiler.Services.LibraryBuildMode.Persistent"/>.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.BuildOrchestrator.Resolver">
+            <summary>
+            The resolver instance the orchestrator drives. Exposed so the
+            <see cref="T:LibraryCompiler.Services.LibraryCompiler"/> facade can hand the same resolver back
+            to callers without needing to peek at private state through reflection.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.BuildOrchestrator.Policy">
+            <summary>
+            Active build policy. Mutable so the host can react to a settings
+            change (Settings → Build mode) without rebuilding the compiler:
+            already-cached artifacts stay valid, but subsequent compiles use
+            the new mode for any library not already in the in-memory cache.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.BuildOrchestrator.MaxParallelism">
+            <summary>
+            Default upper bound for concurrent library builds. Half the machine
+            is a friendly default that avoids blowing the workstation-GC budget
+            from #7. Hosts can override via the <see cref="P:LibraryCompiler.Services.BuildOrchestrator.MaxParallelism"/>
+            property before <see cref="M:LibraryCompiler.Services.BuildOrchestrator.BuildAsync(System.Collections.Generic.IEnumerable{System.String},LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)"/> is called.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.#ctor(LibraryCompiler.Services.LibraryCompilerOptions)">
+            <summary>Constructs the orchestrator with host-supplied options.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.BuildAsync(System.Collections.Generic.IEnumerable{System.String},LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)">
+            <summary>
+            Compiles every library named in <paramref name="requested"/> plus
+            their transitive dependencies. Honours the build policy: cached
+            artifacts skip the build entirely, Persistent reads/writes the
+            blob store, OnDemand drops artifacts immediately after returning.
+            </summary>
+            <param name="requested">Library names from <c>use X.Y.all</c> clauses.</param>
+            <param name="execution">Linear (deterministic) or Parallel (faster on many libs).</param>
+            <param name="ct">Cancellation token.</param>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.BuildLinearAsync(System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibrarySource},System.Threading.CancellationToken)">
+            <summary>Build artifacts for the given source list one at a time.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.BuildParallelAsync(System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibrarySource},System.Threading.CancellationToken)">
+            <summary>
+            Concurrent build with bounded parallelism. Diagnostic ordering is
+            stabilised by sorting the result list by (library name) on emit so
+            the consumer doesn't see non-deterministic output.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.BuildOneAsync(LibraryCompiler.Repositories.LibrarySource,System.Threading.CancellationToken)">
+            <summary>
+            Build (or recall from cache) exactly one library, applying the
+            policy that's active for it.
+            </summary>
+            <remarks>
+            Persistent reads validate the cached <see cref="P:LibraryCompiler.Repositories.CompiledLibrary.ContentHash"/>
+            against a freshly-computed hash of the live source bytes. Edits to a
+            user plugin invalidate the blob automatically — no mtime tracking,
+            no manual cache busting. Source bytes read for the validation are
+            threaded into the cold-build path so we don't read them twice on a
+            miss.
+            </remarks>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.Reset">
+            <summary>
+            Empties the in-memory artifact cache. Does NOT touch the host's
+            <see cref="T:LibraryCompiler.Services.IBlobStore"/> — that's a host-policy decision, not a
+            build-orchestrator concern.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.BuildOrchestrator.ProcessCacheSnapshot">
+            <summary>Read-only view of the in-memory cache (for diagnostics / tests).</summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.IBlobStore">
+            <summary>
+            Read/write key→bytes storage that the host injects when it wants the
+            compiler to persist artifacts across sessions. The compiler treats
+            this strictly as an opaque blob store — it never asks where the bytes
+            live, what filesystem is used, what quota applies, or how eviction is
+            handled. Those are host concerns.
+            </summary>
+            <remarks>
+            <para>
+            Reference implementations live in the host (<c>Kmila.Shared/Services/</c>):
+            <list type="bullet">
+              <item><c>FileSystemBlobStore(rootPath)</c> for desktop / dev tree.</item>
+              <item><c>MauiAppDataBlobStore</c> for mobile (wraps <c>FileSystem.AppDataDirectory</c>).</item>
+              <item><c>IsolatedStorageBlobStore</c> for sandboxed environments.</item>
+            </list>
+            The lib ships <see cref="T:LibraryCompiler.Services.InMemoryBlobStore"/> and <see cref="T:LibraryCompiler.Services.NullBlobStore"/>
+            as portable defaults — useful for tests and for hosts that don't want
+            any persistence at all.
+            </para>
+            <para>
+            Keys are caller-defined strings; the compiler uses content-hash keys
+            for IEEE / user libraries so a different source produces a different
+            key automatically (no mtime-based invalidation needed).
+            </para>
+            </remarks>
+        </member>
+        <member name="M:LibraryCompiler.Services.IBlobStore.ExistsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>True iff <paramref name="key"/> has a stored value.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.IBlobStore.ReadAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Returns the bytes for <paramref name="key"/>, or <c>null</c> when missing.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.IBlobStore.WriteAsync(System.String,System.Byte[],System.Threading.CancellationToken)">
+            <summary>Writes <paramref name="payload"/> under <paramref name="key"/>, replacing any prior value.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.IBlobStore.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Removes <paramref name="key"/> if present. No-op when missing.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.IBlobStore.EnumerateKeysAsync(System.Threading.CancellationToken)">
+            <summary>
+            Streams every stored key. The host can use this to compute total
+            usage for LRU eviction policy decisions. Yielding lazily so a
+            large store doesn't materialise the full list in memory.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.LibraryBuilder">
+            <summary>
+            Compiles a single <see cref="T:LibraryCompiler.Repositories.LibrarySource"/> into a
+            <see cref="T:LibraryCompiler.Repositories.CompiledLibrary"/>. v1 extracts public symbol names by
+            regex and tags them as black boxes — exactly what
+            <c>IEEELibraryLoader</c> used to do, but exposed as a first-class
+            operation rather than buried in the Interpreter. v2 (queued, see #22's
+            follow-up tasks) replaces the regex pass with a real parser run and
+            adds primitive lowering.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryBuilder.#ctor(LibraryCompiler.Services.LibraryCompilerOptions)">
+            <summary>Constructs a builder bound to the host's options.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryBuilder.BuildAsync(LibraryCompiler.Repositories.LibrarySource,System.Threading.CancellationToken)">
+            <summary>
+            Reads <paramref name="source"/>'s bytes through the host callback,
+            extracts public symbols, and returns a <see cref="T:LibraryCompiler.Repositories.CompiledLibrary"/>.
+            Falls back to a hard-coded canonical name list when the host can't
+            supply source bytes — that path keeps trimmed deployments working
+            even without the .vhd files on disk.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryBuilder.BuildAsync(LibraryCompiler.Repositories.LibrarySource,System.Byte[],System.Threading.CancellationToken)">
+            <summary>
+            Builds with source bytes that the caller already read — used by the
+            orchestrator's persistent-cache path so we don't pay the source
+            round-trip twice when validating a cache hit.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryBuilder.ReadSourceBytesAsync(LibraryCompiler.Repositories.LibrarySource,System.Threading.CancellationToken)">
+            <summary>
+            Reads the source bytes the host can supply, or falls back to the
+            embedded resource for IEEE builtins. Returns <c>null</c> when the
+            library is genuinely unsourced. Marked <c>internal</c> so the
+            orchestrator can read bytes once and reuse them across the
+            hash-validation + cold-build paths.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryBuilder.BuildFallback(LibraryCompiler.Repositories.LibrarySource,System.Collections.Generic.List{LibraryCompiler.Repositories.LibraryDiagnostic})">
+            <summary>
+            Hard-coded fallback for IEEE.std_logic_1164 / IEEE.numeric_std when
+            no source bytes are available. Mirrors the legacy
+            <c>IEEELibraryLoader.SeedFallbackNames</c> behaviour.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.LibraryBuildMode">
+            <summary>
+            In-memory retention strategy for compiled artifacts. Combined with the
+            host-supplied <see cref="T:LibraryCompiler.Services.IBlobStore"/> (or a <see cref="T:LibraryCompiler.Services.NullBlobStore"/>)
+            to express the full cache policy.
+            </summary>
+        </member>
+        <member name="F:LibraryCompiler.Services.LibraryBuildMode.OnDemand">
+            <summary>
+            Re-parse every invocation; nothing retained. Lowest RAM, lowest
+            disk, highest CPU. Safe default for low-spec devices.
+            </summary>
+        </member>
+        <member name="F:LibraryCompiler.Services.LibraryBuildMode.ProcessCached">
+            <summary>
+            Keep compiled artifacts in memory for the lifetime of the process.
+            Subsequent compiles in the same session are dictionary lookups.
+            </summary>
+        </member>
+        <member name="F:LibraryCompiler.Services.LibraryBuildMode.Persistent">
+            <summary>
+            Keep in memory AND read/write through the host's
+            <see cref="T:LibraryCompiler.Services.IBlobStore"/> so artifacts survive across sessions.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.LibraryBuildPolicy">
+            <summary>
+            Per-library override for the global <see cref="T:LibraryCompiler.Services.LibraryBuildMode"/>. The
+            host typically picks a global default (e.g. <c>ProcessCached</c>) and
+            supplies overrides for libraries that want different behaviour
+            (e.g. keep IEEE process-cached but force one heavy custom library to
+            build OnDemand to spare RAM).
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryBuildPolicy.Default">
+            <summary>
+            Mode applied to libraries with no explicit override. Default is
+            <see cref="F:LibraryCompiler.Services.LibraryBuildMode.ProcessCached"/>; the host should
+            downgrade to <see cref="F:LibraryCompiler.Services.LibraryBuildMode.OnDemand"/> on devices
+            where probed free RAM is below its chosen threshold.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryBuildPolicy.PerLibrary">
+            <summary>Per-library overrides keyed by case-insensitive library name.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryBuildPolicy.ResolveFor(System.String)">
+            <summary>Returns the effective mode for a given library name.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryBuildPolicy.AlwaysOnDemand">
+            <summary>Convenience: every library uses <see cref="F:LibraryCompiler.Services.LibraryBuildMode.OnDemand"/>.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryBuildPolicy.AlwaysProcessCached">
+            <summary>Convenience: every library uses <see cref="F:LibraryCompiler.Services.LibraryBuildMode.ProcessCached"/>.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryBuildPolicy.AlwaysPersistent">
+            <summary>Convenience: every library uses <see cref="F:LibraryCompiler.Services.LibraryBuildMode.Persistent"/>.</summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.LibraryCompiler">
+            <summary>
+            Top-level facade the host (Interpreter / Debugger / future MAUI app)
+            wires up via DI. Encapsulates the resolver, the builder, the
+            orchestrator, and the policy. The host's only responsibility is
+            constructing <see cref="T:LibraryCompiler.Services.LibraryCompilerOptions"/> with appropriate
+            callbacks and then calling <see cref="M:LibraryCompiler.Services.LibraryCompiler.CompileAsync(System.Collections.Generic.IEnumerable{System.String},LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryCompiler.Resolver">
+            <summary>The resolver — exposed for tests and for hosts that want to enumerate known libraries.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryCompiler.Orchestrator">
+            <summary>The orchestrator — exposed for the in-memory cache snapshot / Reset hook.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryCompiler.#ctor(LibraryCompiler.Services.LibraryCompilerOptions)">
+            <summary>
+            Constructs a compiler with the host-supplied options. Throws
+            <see cref="T:System.ArgumentNullException"/> if <see cref="P:LibraryCompiler.Services.LibraryCompilerOptions.OpenLibrarySource"/>
+            is null — the lib has no business probing the filesystem on its own.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryCompiler.FromSyncOpener(System.Func{System.String,System.IO.Stream},LibraryCompiler.Services.IBlobStore,System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibrarySource},LibraryCompiler.Services.LibraryBuildPolicy)">
+            <summary>
+            Convenience overload that takes a synchronous source-stream
+            callback — common for tests and for hosts that already have the
+            bytes in memory.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryCompiler.CompileAsync(System.Collections.Generic.IEnumerable{System.String},LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)">
+            <summary>
+            Compiles every library in <paramref name="requested"/> plus their
+            transitive dependencies. Returns the full set in topological order
+            (linear) or library-name order (parallel).
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryCompiler.CompileProjectAsync(LibraryCompiler.Services.ProjectContext,LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)">
+            <summary>
+            Compiles a complete project — list of source files plus their
+            declared library dependencies — into a <see cref="T:LibraryCompiler.Services.CompiledProject"/>.
+            Real FPGA designs span many .vhd files; this is the entry point
+            the editor's "Build" button calls and the test runners can use
+            for multi-file fixtures.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.ProjectContext">
+            <summary>
+            Input to <see cref="M:LibraryCompiler.Services.LibraryCompiler.CompileProjectAsync(LibraryCompiler.Services.ProjectContext,LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)"/>. Captures
+            the multi-file nature of real FPGA projects: a list of user-source
+            files plus the libraries they collectively reference.
+            </summary>
+            <param name="Files">Absolute paths or host-defined keys for each user source file.</param>
+            <param name="UseClauses">
+            Library names from <c>use X.Y.all</c> across every file. The host
+            pre-scans the user code (cheap regex) and supplies the union.
+            </param>
+            <param name="TopEntity">
+            Optional name of the top-level entity. Hosts that don't know yet pass
+            <c>null</c>; the editor sets it once the user picks a top.
+            </param>
+        </member>
+        <member name="M:LibraryCompiler.Services.ProjectContext.#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>
+            Input to <see cref="M:LibraryCompiler.Services.LibraryCompiler.CompileProjectAsync(LibraryCompiler.Services.ProjectContext,LibraryCompiler.Services.BuildExecutionMode,System.Threading.CancellationToken)"/>. Captures
+            the multi-file nature of real FPGA projects: a list of user-source
+            files plus the libraries they collectively reference.
+            </summary>
+            <param name="Files">Absolute paths or host-defined keys for each user source file.</param>
+            <param name="UseClauses">
+            Library names from <c>use X.Y.all</c> across every file. The host
+            pre-scans the user code (cheap regex) and supplies the union.
+            </param>
+            <param name="TopEntity">
+            Optional name of the top-level entity. Hosts that don't know yet pass
+            <c>null</c>; the editor sets it once the user picks a top.
+            </param>
+        </member>
+        <member name="P:LibraryCompiler.Services.ProjectContext.Files">
+            <summary>Absolute paths or host-defined keys for each user source file.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.ProjectContext.UseClauses">
+            <summary>
+            Library names from <c>use X.Y.all</c> across every file. The host
+            pre-scans the user code (cheap regex) and supplies the union.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.ProjectContext.TopEntity">
+            <summary>
+            Optional name of the top-level entity. Hosts that don't know yet pass
+            <c>null</c>; the editor sets it once the user picks a top.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.CompiledProject">
+            <summary>Result of a multi-file project compile.</summary>
+            <param name="UserFiles">The original list of user source files.</param>
+            <param name="Libraries">Compiled IEEE / user-imported libraries.</param>
+            <param name="Diagnostics">Aggregated diagnostics from every library build.</param>
+        </member>
+        <member name="M:LibraryCompiler.Services.CompiledProject.#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.CompiledLibrary},System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibraryDiagnostic})">
+            <summary>Result of a multi-file project compile.</summary>
+            <param name="UserFiles">The original list of user source files.</param>
+            <param name="Libraries">Compiled IEEE / user-imported libraries.</param>
+            <param name="Diagnostics">Aggregated diagnostics from every library build.</param>
+        </member>
+        <member name="P:LibraryCompiler.Services.CompiledProject.UserFiles">
+            <summary>The original list of user source files.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.CompiledProject.Libraries">
+            <summary>Compiled IEEE / user-imported libraries.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.CompiledProject.Diagnostics">
+            <summary>Aggregated diagnostics from every library build.</summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.LibraryCompilerOptions">
+            <summary>
+            Everything the host injects when constructing a <see cref="T:LibraryCompiler.Services.LibraryCompiler"/>.
+            All path/platform decisions live in this record — the lib itself
+            touches no filesystem, no environment variables, no special folders.
+            </summary>
+            <param name="OpenLibrarySource">
+            Resolves a <see cref="P:LibraryCompiler.Repositories.LibrarySource.SourceKey"/> to a readable byte
+            stream. The host decides what the key means (relative path, embedded
+            resource name, absolute path, …); the compiler treats it as opaque.
+            Returning <c>null</c> signals the host can't provide source for that
+            key — the compiler falls back to its built-in fallback list when the
+            missing library is one of the IEEE builtins.
+            </param>
+            <param name="CacheStore">
+            Optional persistence. Pass <see cref="F:LibraryCompiler.Services.NullBlobStore.Instance"/> (or
+            leave null and the compiler will substitute it) to disable disk
+            persistence. Used only when <see cref="P:LibraryCompiler.Services.LibraryCompilerOptions.Policy"/> requests
+            <see cref="F:LibraryCompiler.Services.LibraryBuildMode.Persistent"/>.
+            </param>
+            <param name="AdditionalSources">
+            User-imported libraries (plugins) the host has discovered. The
+            compiler merges these with its IEEE builtins so user code can
+            <c>use mylib.something.all</c> through the same machinery.
+            </param>
+            <param name="Policy">
+            Build mode (and per-library overrides). Defaults to
+            <see cref="P:LibraryCompiler.Services.LibraryBuildPolicy.AlwaysProcessCached"/> if the host
+            doesn't supply one — but the host SHOULD make this decision based
+            on the target device's resources rather than relying on the default.
+            </param>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryCompilerOptions.#ctor(System.Func{System.String,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.IO.Stream}},LibraryCompiler.Services.IBlobStore,System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibrarySource},LibraryCompiler.Services.LibraryBuildPolicy)">
+            <summary>
+            Everything the host injects when constructing a <see cref="T:LibraryCompiler.Services.LibraryCompiler"/>.
+            All path/platform decisions live in this record — the lib itself
+            touches no filesystem, no environment variables, no special folders.
+            </summary>
+            <param name="OpenLibrarySource">
+            Resolves a <see cref="P:LibraryCompiler.Repositories.LibrarySource.SourceKey"/> to a readable byte
+            stream. The host decides what the key means (relative path, embedded
+            resource name, absolute path, …); the compiler treats it as opaque.
+            Returning <c>null</c> signals the host can't provide source for that
+            key — the compiler falls back to its built-in fallback list when the
+            missing library is one of the IEEE builtins.
+            </param>
+            <param name="CacheStore">
+            Optional persistence. Pass <see cref="F:LibraryCompiler.Services.NullBlobStore.Instance"/> (or
+            leave null and the compiler will substitute it) to disable disk
+            persistence. Used only when <see cref="P:LibraryCompiler.Services.LibraryCompilerOptions.Policy"/> requests
+            <see cref="F:LibraryCompiler.Services.LibraryBuildMode.Persistent"/>.
+            </param>
+            <param name="AdditionalSources">
+            User-imported libraries (plugins) the host has discovered. The
+            compiler merges these with its IEEE builtins so user code can
+            <c>use mylib.something.all</c> through the same machinery.
+            </param>
+            <param name="Policy">
+            Build mode (and per-library overrides). Defaults to
+            <see cref="P:LibraryCompiler.Services.LibraryBuildPolicy.AlwaysProcessCached"/> if the host
+            doesn't supply one — but the host SHOULD make this decision based
+            on the target device's resources rather than relying on the default.
+            </param>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryCompilerOptions.OpenLibrarySource">
+            <summary>
+            Resolves a <see cref="P:LibraryCompiler.Repositories.LibrarySource.SourceKey"/> to a readable byte
+            stream. The host decides what the key means (relative path, embedded
+            resource name, absolute path, …); the compiler treats it as opaque.
+            Returning <c>null</c> signals the host can't provide source for that
+            key — the compiler falls back to its built-in fallback list when the
+            missing library is one of the IEEE builtins.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryCompilerOptions.CacheStore">
+            <summary>
+            Optional persistence. Pass <see cref="F:LibraryCompiler.Services.NullBlobStore.Instance"/> (or
+            leave null and the compiler will substitute it) to disable disk
+            persistence. Used only when <see cref="P:LibraryCompiler.Services.LibraryCompilerOptions.Policy"/> requests
+            <see cref="F:LibraryCompiler.Services.LibraryBuildMode.Persistent"/>.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryCompilerOptions.AdditionalSources">
+            <summary>
+            User-imported libraries (plugins) the host has discovered. The
+            compiler merges these with its IEEE builtins so user code can
+            <c>use mylib.something.all</c> through the same machinery.
+            </summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryCompilerOptions.Policy">
+            <summary>
+            Build mode (and per-library overrides). Defaults to
+            <see cref="P:LibraryCompiler.Services.LibraryBuildPolicy.AlwaysProcessCached"/> if the host
+            doesn't supply one — but the host SHOULD make this decision based
+            on the target device's resources rather than relying on the default.
+            </summary>
+        </member>
+        <member name="T:LibraryCompiler.Services.LibraryResolver">
+            <summary>
+            Maps a logical library name (as it appears in <c>use X.Y.all</c>) to a
+            <see cref="T:LibraryCompiler.Repositories.LibrarySource"/> the orchestrator can hand to a builder.
+            Knows about the bundled IEEE builtins and the host's user-supplied
+            additional sources; nothing else.
+            </summary>
+            <remarks>
+            All mutations and reads go through <see cref="F:LibraryCompiler.Services.LibraryResolver._lock"/> because the
+            host can re-sync user-imported entries (Settings → Libraries import
+            or delete) while a parallel build is concurrently consulting the
+            resolver from <see cref="M:LibraryCompiler.Services.LibraryResolver.ResolveTransitive(System.Collections.Generic.IEnumerable{System.String})"/>.
+            </remarks>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryResolver.#ctor(System.Collections.Generic.IReadOnlyList{LibraryCompiler.Repositories.LibrarySource})">
+            <summary>
+            Initializes the resolver with the bundled IEEE builtins plus any
+            host-supplied user libraries. Later registrations win over earlier
+            ones with the same name — that lets a user override an IEEE stub
+            with their own implementation if they really want to.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryResolver.Register(LibraryCompiler.Repositories.LibrarySource)">
+            <summary>Adds or replaces a library entry by name.</summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryResolver.Unregister(System.String)">
+            <summary>
+            Removes the entry matching <paramref name="libraryName"/>, returning
+            <c>true</c> if it existed. Used by the host on Settings → Libraries
+            delete (and on external file removals picked up via
+            <c>UserAssetStore.OnChange</c>) to keep the resolver's view of the
+            world honest.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryResolver.Resolve(System.String)">
+            <summary>Looks up a library by name, returning <c>null</c> when unknown.</summary>
+        </member>
+        <member name="P:LibraryCompiler.Services.LibraryResolver.All">
+            <summary>
+            Snapshot of every library currently known to this resolver. Returns
+            a copy so the caller can iterate without holding the resolver's
+            internal lock.
+            </summary>
+        </member>
+        <member name="M:LibraryCompiler.Services.LibraryResolver.ResolveTransitive(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Returns the libraries listed in <paramref name="requested"/> plus
+            every library they transitively depend on, in topological order
+            (dependencies before dependents). Unknown names are silently
+            skipped — the caller surfaces a diagnostic for those.
+            </summary>
+        </member>
+    </members>
+</doc>

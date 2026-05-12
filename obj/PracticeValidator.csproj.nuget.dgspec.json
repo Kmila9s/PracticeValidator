@@ -1,0 +1,1355 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/miku/Documents/Kmila-9s/PracticeValidator/PracticeValidator.csproj": {}
+  },
+  "projects": {
+    "/Users/miku/Documents/Kmila-9s/App/Kmila/Kmila.Shared/Kmila.Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/App/Kmila/Kmila.Shared/Kmila.Shared.csproj",
+        "projectName": "Kmila.Shared",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/App/Kmila/Kmila.Shared/Kmila.Shared.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/App/Kmila/Kmila.Shared/obj/",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0",
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              }
+            }
+          },
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              }
+            }
+          },
+          "net9.0-ios18.0": {
+            "targetAlias": "net9.0-ios",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              }
+            }
+          },
+          "net9.0-maccatalyst18.0": {
+            "targetAlias": "net9.0-maccatalyst",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Blazor.Bootstrap": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "BlazorMonaco": {
+              "target": "Package",
+              "version": "[3.3.0, )"
+            },
+            "Markdig": {
+              "target": "Package",
+              "version": "[0.38.0, )"
+            },
+            "Microsoft.AspNetCore.Components.Web": {
+              "target": "Package",
+              "version": "[9.0.5, )"
+            },
+            "sqlite-net-pcl": {
+              "target": "Package",
+              "version": "[1.9.172, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
+          "dependencies": {
+            "Blazor.Bootstrap": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "BlazorMonaco": {
+              "target": "Package",
+              "version": "[3.3.0, )"
+            },
+            "Markdig": {
+              "target": "Package",
+              "version": "[0.38.0, )"
+            },
+            "Microsoft.AspNetCore.Components.WebView.Maui": {
+              "target": "Package",
+              "version": "[9.0.120, )"
+            },
+            "Microsoft.Maui.Controls": {
+              "target": "Package",
+              "version": "[9.0.120, )"
+            },
+            "sqlite-net-pcl": {
+              "target": "Package",
+              "version": "[1.9.172, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-ios18.0": {
+          "targetAlias": "net9.0-ios",
+          "dependencies": {
+            "Blazor.Bootstrap": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "BlazorMonaco": {
+              "target": "Package",
+              "version": "[3.3.0, )"
+            },
+            "Markdig": {
+              "target": "Package",
+              "version": "[0.38.0, )"
+            },
+            "Microsoft.AspNetCore.Components.WebView.Maui": {
+              "target": "Package",
+              "version": "[9.0.120, )"
+            },
+            "Microsoft.Maui.Controls": {
+              "target": "Package",
+              "version": "[9.0.120, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            },
+            "sqlite-net-pcl": {
+              "target": "Package",
+              "version": "[1.9.172, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-maccatalyst18.0": {
+          "targetAlias": "net9.0-maccatalyst",
+          "dependencies": {
+            "Blazor.Bootstrap": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "BlazorMonaco": {
+              "target": "Package",
+              "version": "[3.3.0, )"
+            },
+            "Markdig": {
+              "target": "Package",
+              "version": "[0.38.0, )"
+            },
+            "Microsoft.AspNetCore.Components.WebView.Maui": {
+              "target": "Package",
+              "version": "[9.0.120, )"
+            },
+            "Microsoft.Maui.Controls": {
+              "target": "Package",
+              "version": "[9.0.120, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            },
+            "sqlite-net-pcl": {
+              "target": "Package",
+              "version": "[1.9.172, )"
+            }
+          },
+          "imports": [
+            "xamarinios10",
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj",
+        "projectName": "Debugger",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/Debugger/Debugger.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/Debugger/obj/",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0",
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          },
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          },
+          "net9.0-ios18.0": {
+            "targetAlias": "net9.0-ios",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          },
+          "net9.0-maccatalyst18.0": {
+            "targetAlias": "net9.0-maccatalyst",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-ios18.0": {
+          "targetAlias": "net9.0-ios",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-maccatalyst18.0": {
+          "targetAlias": "net9.0-maccatalyst",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "xamarinios10",
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj",
+        "projectName": "Interpreter",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/Interpreter/Interpreter.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/Interpreter/obj/",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0",
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          },
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          },
+          "net9.0-ios18.0": {
+            "targetAlias": "net9.0-ios",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          },
+          "net9.0-maccatalyst18.0": {
+            "targetAlias": "net9.0-maccatalyst",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              },
+              "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-ios18.0": {
+          "targetAlias": "net9.0-ios",
+          "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-maccatalyst18.0": {
+          "targetAlias": "net9.0-maccatalyst",
+          "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "xamarinios10",
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj",
+        "projectName": "LibraryCompiler",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/LibraryCompiler.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/LibraryCompiler/obj/",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0",
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              }
+            }
+          },
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              }
+            }
+          },
+          "net9.0-ios18.0": {
+            "targetAlias": "net9.0-ios",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              }
+            }
+          },
+          "net9.0-maccatalyst18.0": {
+            "targetAlias": "net9.0-maccatalyst",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-ios18.0": {
+          "targetAlias": "net9.0-ios",
+          "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-maccatalyst18.0": {
+          "targetAlias": "net9.0-maccatalyst",
+          "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "xamarinios10",
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj",
+        "projectName": "Parser",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/Parser/Parser.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/Parser/obj/",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0",
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          },
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
+            "projectReferences": {}
+          },
+          "net9.0-ios18.0": {
+            "targetAlias": "net9.0-ios",
+            "projectReferences": {}
+          },
+          "net9.0-maccatalyst18.0": {
+            "targetAlias": "net9.0-maccatalyst",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-ios18.0": {
+          "targetAlias": "net9.0-ios",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-maccatalyst18.0": {
+          "targetAlias": "net9.0-maccatalyst",
+          "dependencies": {
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.3, )"
+            }
+          },
+          "imports": [
+            "xamarinios10",
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/miku/Documents/Kmila-9s/PracticeValidator/PracticeValidator.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/PracticeValidator/PracticeValidator.csproj",
+        "projectName": "PracticeValidator",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/PracticeValidator/PracticeValidator.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/PracticeValidator/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/miku/Documents/Kmila-9s/App/Kmila/Kmila.Shared/Kmila.Shared.csproj": {
+                "projectPath": "/Users/miku/Documents/Kmila-9s/App/Kmila/Kmila.Shared/Kmila.Shared.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj",
+        "projectName": "TimeMachine",
+        "projectPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/TimeMachine.csproj",
+        "packagesPath": "/Users/miku/.nuget/packages/",
+        "outputPath": "/Users/miku/Documents/Kmila-9s/TimeMachine/obj/",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "/Users/miku/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0",
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          },
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
+            "projectReferences": {}
+          },
+          "net9.0-ios18.0": {
+            "targetAlias": "net9.0-ios",
+            "projectReferences": {}
+          },
+          "net9.0-maccatalyst18.0": {
+            "targetAlias": "net9.0-maccatalyst",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-ios18.0": {
+          "targetAlias": "net9.0-ios",
+          "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        },
+        "net9.0-maccatalyst18.0": {
+          "targetAlias": "net9.0-maccatalyst",
+          "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.15, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "xamarinios10",
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

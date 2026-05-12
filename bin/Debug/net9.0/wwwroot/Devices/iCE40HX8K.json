@@ -1,0 +1,30 @@
+{
+  "model": "iCE40HX8K",
+  "family": "iCE40 HX",
+  "manufacturer": "Lattice",
+  "resources": {
+    "logic_units": 7680,
+    "logic_units_type": "LUTs",
+    "registers_flip_flops": 7680,
+    "memory_blocks": 32,
+    "memory_block_type": "sysMEM EBR (4 Kbit)",
+    "memory_total_kbits": 128,
+    "dsp_slices": 0,
+    "dsp_slice_type": "N/A"
+  },
+  "clocking": {
+    "pll_count": 1,
+    "dcm_mmcm_count": 0,
+    "max_pll_output_mhz": 275,
+    "system_clock_mhz": 12
+  },
+  "power": {
+    "core_voltage_vccint_v": 1.2
+  },
+  "io": {
+    "max_user_io": 206,
+    "io_banks_count": null,
+    "supported_io_standards": null
+  },
+  "package_options": null
+}

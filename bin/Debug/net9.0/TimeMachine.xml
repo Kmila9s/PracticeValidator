@@ -1,0 +1,290 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TimeMachine</name>
+    </assembly>
+    <members>
+        <member name="T:TimeMachine.Models.Clock">
+            <summary>
+            Represents a single clock signal within the simulation. It toggles its state based on its frequency
+            and the global simulation ticks provided by <see cref="T:TimeMachine.Models.TimeClock"/>.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Models.Clock.Name">
+            <summary>
+            Gets or sets the name of the clock signal.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Models.Clock.State">
+            <summary>
+            Gets the current state of the clock (e.g., high or low).
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Models.Clock.Period">
+            <summary>
+            Gets the period of the clock in simulation ticks.
+            </summary>
+        </member>
+        <member name="F:TimeMachine.Models.Clock._halfPeriod">
+            <summary>
+            Half of the period in simulation ticks. Used to determine when the clock state should toggle.
+            </summary>
+        </member>
+        <member name="F:TimeMachine.Models.Clock._currentTick">
+            <summary>
+            Tracks the next tick at which the clock should toggle its state.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Models.Clock.OnStatusChanged">
+            <summary>
+            Event fired whenever the clock's state changes.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Models.Clock.#ctor(System.Boolean,System.Double,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:TimeMachine.Models.Clock"/> class.
+            </summary>
+            <param name="InitialState">The initial state of the clock (true for high, false for low).</param>
+            <param name="frequencyMHz">The frequency of the clock in Megahertz.</param>
+            <param name="Name">An optional name for the clock signal.</param>
+        </member>
+        <member name="M:TimeMachine.Models.Clock.OnResetGlobalClock(System.Object,System.Boolean)">
+            <summary>
+            Handles the global clock overflow reset by resetting the internal tick counter to zero.
+            </summary>
+            <param name="sender">The source of the event (the <see cref="T:TimeMachine.Models.TimeClock"/> instance).</param>
+            <param name="reset">True if the global clock has been reset due to overflow.</param>
+        </member>
+        <member name="M:TimeMachine.Models.Clock.Tick(System.UInt64)">
+            <summary>
+            Callback method that is invoked on every global tick to determine if this clock's state should change.
+            </summary>
+            <param name="globalTick">The current global simulation tick.</param>
+        </member>
+        <member name="M:TimeMachine.Models.Clock.Dispose">
+            <summary>
+            Unsubscribes from global clock events to prevent memory leaks.
+            </summary>
+        </member>
+        <member name="T:TimeMachine.Models.Input">
+            <summary>
+            Represents an input signal or variable in the VHDL simulation.
+            </summary>
+            <remarks>
+            <para>
+            The Input class is a placeholder for future implementation of simulation input handling.
+            It will be used to define input signals that can be controlled during simulation,
+            allowing users to set input values at specific time points.
+            </para>
+            <para>
+            <b>Future Use Cases:</b>
+            <list type="bullet">
+            <item><description>Defining testbench inputs for entity ports</description></item>
+            <item><description>Scheduling input value changes at specific simulation times</description></item>
+            <item><description>Providing user-controllable stimulus for interactive debugging</description></item>
+            </list>
+            </para>
+            <para>
+            <b>Current Status:</b> Placeholder implementation. The class currently only holds
+            the input name. Future versions will add properties for value, type, and time-based
+            value changes.
+            </para>
+            </remarks>
+            <seealso cref="T:TimeMachine.Models.Clock"/>
+            <seealso cref="T:TimeMachine.Models.TimeClock"/>
+        </member>
+        <member name="P:TimeMachine.Models.Input.Name">
+            <summary>
+            Gets or sets the name of the input signal.
+            </summary>
+            <value>
+            The identifier name for this input signal.
+            Defaults to an empty string.
+            </value>
+            <example>
+            <code>
+            var resetInput = new Input { Name = "reset" };
+            var dataInput = new Input { Name = "data_in" };
+            </code>
+            </example>
+        </member>
+        <member name="T:TimeMachine.Models.TimeClock">
+            <summary>
+            Represents the global simulation clock. It provides the main "tick" that drives all time-based simulation events.
+            This class is responsible for advancing the simulation time incrementally.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Models.TimeClock.Tick">
+            <summary>
+            Gets the current tick count since the last reset or overflow.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Models.TimeClock.Multiplier">
+            <summary>
+            Gets the number of times the Tick counter has overflowed. Used for very long simulations.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Models.TimeClock.Ns">
+            <summary>
+            Gets the tick resolution in nanoseconds. Defaults to 10 ns per tick.
+            </summary>
+        </member>
+        <member name="F:TimeMachine.Models.TimeClock.NS_PER_TICK">
+            <summary>
+            Defines the resolution of the simulation, representing how many nanoseconds pass in a single tick.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Models.TimeClock.OnTickChanged">
+            <summary>
+            Event fired on every single tick advancement. Provides the new tick count.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Models.TimeClock.ResetCounter">
+            <summary>
+            Event fired when the main tick counter overflows and resets to zero.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Models.TimeClock.Next">
+            <summary>
+            Advances the simulation by one tick, firing <see cref="E:TimeMachine.Models.TimeClock.OnTickChanged"/>. Handles overflow by incrementing <see cref="P:TimeMachine.Models.TimeClock.Multiplier"/> and resetting.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Models.TimeClock.Reset">
+            <summary>
+            Resets the tick counter to zero.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Models.TimeClock.Dispose">
+            <summary>
+            Resets the tick counter to zero.
+            </summary>
+        </member>
+        <member name="T:TimeMachine.Program">
+            <summary>
+            Automated test runner for the TimeMachine module. Replaces the previous
+            interactive REPL that blocked on <c>Console.ReadLine()</c> and made the
+            module impossible to validate non-interactively.
+            </summary>
+            <remarks>
+            Each test is a parameterless function returning a (pass, message) pair.
+            Tests aim for sub-second runtime and avoid real wall-clock waits where
+            possible: clock semantics are exercised directly through <see cref="T:TimeMachine.Models.Clock"/>
+            and <see cref="T:TimeMachine.Models.TimeClock"/> by manually firing ticks, with only a handful
+            of integration tests spinning the <see cref="T:TimeMachine.Repositories.Timer"/>'s background loop.
+            </remarks>
+        </member>
+        <member name="M:TimeMachine.Program.Main(System.String[])">
+            <summary>Test entry. Returns 0 on success, non-zero on failure.</summary>
+        </member>
+        <member name="M:TimeMachine.Program.DriveTicks(TimeMachine.Models.TimeClock,System.Int32)">
+            <summary>Drives a TimeClock through N ticks synchronously.</summary>
+        </member>
+        <member name="T:TimeMachine.Repositories.Timer">
+            <summary>
+            Manages the discrete time simulation, providing controls to start, pause, continue, and stop.
+            This class is the core of the time simulation engine, running on a background thread.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Repositories.Timer.TimeElapsed">
+            <summary>
+            Gets the total simulated time that has elapsed since the simulation started.
+            </summary>
+        </member>
+        <member name="P:TimeMachine.Repositories.Timer.CurrentTick">
+            <summary>
+            Gets the current simulation tick count, representing the total elapsed time in nanoseconds.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Repositories.Timer.OnPaused">
+            <summary>
+            Event fired when the simulation is paused or resumed. The boolean payload is true if paused, false if resumed.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Repositories.Timer.OnSimulationEnded">
+            <summary>
+            Event fired when a simulation with a fixed duration has completed. The boolean payload is true upon completion.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Repositories.Timer.OnProgressAdvance">
+            <summary>
+            Event fired when the simulation progress percentage increases. The double payload is the new percentage.
+            </summary>
+        </member>
+        <member name="E:TimeMachine.Repositories.Timer.OnSimulationTick">
+            <summary>
+            Event fired on each simulation tick for delta cycle processing.
+            The ulong payload is the current tick count.
+            </summary>
+        </member>
+        <member name="F:TimeMachine.Repositories.Timer.Paused">
+            <summary>
+            Indicates whether the simulation is currently paused.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:TimeMachine.Repositories.Timer"/> class.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.Start(System.Nullable{System.TimeSpan})">
+            <summary>
+            Starts the simulation on a background thread.
+            </summary>
+            <param name="Duration">An optional fixed duration for the simulation. If null, the simulation runs indefinitely.</param>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.StartSimulation(System.Nullable{System.TimeSpan})">
+            <summary>
+            The main simulation loop that advances time and fires events.
+            </summary>
+            <param name="Duration">The total duration the simulation should run for. Used to calculate progress.</param>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.TotalPercent(System.Int32)">
+            <summary>
+            Invokes the OnProgressAdvance event only when the percentage value has changed.
+            </summary>
+            <param name="percent">The current progress percentage.</param>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.Restart(System.Nullable{System.TimeSpan})">
+            <summary>
+            Stops the current simulation and immediately starts a new one.
+            </summary>
+            <param name="Duration">An optional fixed duration for the new simulation.</param>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.Stop">
+            <summary>
+            Stops the simulation completely and resets all state.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.GetSimulationTicks(System.TimeSpan,System.Int32)">
+            <summary>
+            Calculates the total number of simulation ticks required to represent a given TimeSpan.
+            </summary>
+            <param name="SimulationTime">The duration to convert to ticks.</param>
+            <param name="TickResolution">The resolution of a single tick in nanoseconds.</param>
+            <returns>The total number of ticks.</returns>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.GetTimeFromTicks(System.UInt64,System.Int32)">
+            <summary>
+            Converts a number of simulation ticks back into a TimeSpan.
+            </summary>
+            <param name="simTicks">The number of simulation ticks.</param>
+            <param name="tickResolutionNs">The resolution of a single tick in nanoseconds.</param>
+            <returns>The corresponding TimeSpan duration.</returns>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.Continue">
+            <summary>
+            Resumes a paused simulation.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.Pause">
+            <summary>
+            Pauses the currently running simulation.
+            </summary>
+        </member>
+        <member name="M:TimeMachine.Repositories.Timer.Dispose">
+            <summary>
+            Disposes of managed resources, such as cancellation tokens and the internal clock.
+            </summary>
+        </member>
+    </members>
+</doc>

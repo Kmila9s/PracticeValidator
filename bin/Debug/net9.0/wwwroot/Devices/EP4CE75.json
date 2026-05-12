@@ -1,0 +1,34 @@
+{
+  "model": "EP4CE75",
+  "family": "Cyclone IV E",
+  "manufacturer": "Intel (Altera)",
+  "resources": {
+    "logic_units": 75408,
+    "logic_units_type": "Logic Elements (LEs)",
+    "registers_flip_flops": 75408,
+    "memory_blocks": 305,
+    "memory_block_type": "M9K (9 Kbit)",
+    "memory_total_kbits": 2745,
+    "dsp_slices": 200,
+    "dsp_slice_type": "18x18 multiplier"
+  },
+  "clocking": {
+    "pll_count": 4,
+    "dcm_mmcm_count": 0,
+    "max_pll_output_mhz": 1300,
+    "system_clock_mhz": 50
+  },
+  "power": {
+    "core_voltage_vccint_v": 1.2
+  },
+  "io": {
+    "max_user_io": 426,
+    "io_banks_count": 8,
+    "supported_io_standards": null
+  },
+  "package_options": [
+    "U484",
+    "F484",
+    "F780"
+  ]
+}

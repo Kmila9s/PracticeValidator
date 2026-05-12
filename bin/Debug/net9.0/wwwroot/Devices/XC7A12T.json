@@ -1,0 +1,30 @@
+{
+  "model": "XC7A12T",
+  "family": "Artix-7",
+  "manufacturer": "AMD (Xilinx)",
+  "resources": {
+    "logic_units": 12800,
+    "logic_units_type": "Logic Cells",
+    "registers_flip_flops": 16000,
+    "memory_blocks": 20,
+    "memory_block_type": "Block RAM (36 Kbit)",
+    "memory_total_kbits": 720,
+    "dsp_slices": 40,
+    "dsp_slice_type": "DSP48E1"
+  },
+  "clocking": {
+    "pll_count": 5,
+    "dcm_mmcm_count": 5,
+    "max_pll_output_mhz": 800,
+    "system_clock_mhz": 100
+  },
+  "power": {
+    "core_voltage_vccint_v": 1.0
+  },
+  "io": {
+    "max_user_io": 170,
+    "io_banks_count": null,
+    "supported_io_standards": null
+  },
+  "package_options": null
+}

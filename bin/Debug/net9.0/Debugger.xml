@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Debugger</name>
+    </assembly>
+    <members>
+        <member name="T:Debugger.Program">
+            <summary>
+            Main entry point for the Debugger module test application.
+            </summary>
+            <remarks>
+            <para>
+            This program demonstrates the file processing capabilities of the Debugger module
+            by scanning a directory for VHDL files and parsing each one to identify entities
+            and architectures.
+            </para>
+            <para>
+            The program currently serves as a test harness for the <see cref="N:Parser"/> class,
+            which is the core component responsible for bridging VHDL source files with the
+            Interpreter module's data models.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:Debugger.Program.Main(System.String[])">
+            <summary>
+            Application entry point that processes all VHDL files in the "Codes" directory.
+            </summary>
+            <param name="args">Command-line arguments (currently unused).</param>
+            <remarks>
+            <para>
+            For each VHDL file found in the "Codes" directory:
+            <list type="number">
+            <item><description>Creates a new Parser instance with the file path</description></item>
+            <item><description>Calls ParseFile() to identify entity and architecture blocks</description></item>
+            <item><description>Reports the number of entities found in the file</description></item>
+            </list>
+            </para>
+            <para>
+            Expected directory structure:
+            <code>
+            Debugger/
+            ├── Program.cs
+            ├── Repositories/
+            │   └── Parser.cs
+            └── Codes/
+                ├── test1.vhdl
+                ├── test2.vhdl
+                └── ...
+            </code>
+            </para>
+            </remarks>
+            <exception cref="T:System.IO.DirectoryNotFoundException">
+            Thrown if the "Codes" directory does not exist.
+            </exception>
+        </member>
+        <member name="T:Debugger.Repositories.Parser">
+            <summary>
+            Bridge between VHDL source files and the Interpreter module's data models.
+            </summary>
+            <remarks>
+            <para>
+            The Parser class is responsible for reading VHDL source files and extracting
+            structural information to create <see cref="T:Interpreter.Services.Entity"/> and <see cref="T:Interpreter.Services.Architecture"/>
+            objects that can be used by the Interpreter module for simulation.
+            </para>
+            <para>
+            <b>Parsing Algorithm:</b>
+            The parser uses a simple state machine approach with three states:
+            <list type="bullet">
+            <item><description><c>it=0</c>: Default state - looking for entity or architecture keywords</description></item>
+            <item><description><c>it=1</c>: Inside entity block - collecting lines until "end" keyword</description></item>
+            <item><description><c>it=2</c>: Inside architecture block - collecting lines until "end" keyword</description></item>
+            </list>
+            </para>
+            <para>
+            <b>Limitations:</b>
+            <list type="bullet">
+            <item><description>Uses string matching rather than full tokenization for structure detection</description></item>
+            <item><description>Does not handle multiline comments</description></item>
+            <item><description>The Tokenizer is instantiated but not actively used (reserved for future enhancement)</description></item>
+            </list>
+            </para>
+            </remarks>
+            <seealso cref="T:Interpreter.Services.Entity"/>
+            <seealso cref="T:Interpreter.Services.Architecture"/>
+            <seealso cref="T:Parser.Repositories.Tokenizer"/>
+        </member>
+        <member name="P:Debugger.Repositories.Parser.FileContent">
+            <summary>
+            Gets the raw content of the VHDL file.
+            </summary>
+            <value>The complete text content of the VHDL file as read from disk.</value>
+        </member>
+        <member name="P:Debugger.Repositories.Parser.Entities">
+            <summary>
+            Gets the list of parsed Entity objects.
+            </summary>
+            <value>
+            A list of <see cref="T:Interpreter.Services.Entity"/> objects created from the VHDL file.
+            Each entity includes its associated architecture after successful parsing.
+            </value>
+        </member>
+        <member name="P:Debugger.Repositories.Parser.Diagnostics">
+            <summary>
+            Structured diagnostics collected during the most recent <see cref="M:Debugger.Repositories.Parser.ParseFile"/>
+            call. Errors that used to propagate as a <see cref="!:Parser.Models.ParserException"/>
+            still do — but we also mirror them here so the Editor can surface
+            line-accurate Monaco markers without catching exceptions.
+            Warnings (missing semicolons, style lapses, etc.) are pushed here and
+            don't interrupt the parse path.
+            </summary>
+        </member>
+        <member name="F:Debugger.Repositories.Parser._excludedEnds">
+            <summary>
+            Keywords that should not be treated as end-block markers when they
+            follow <c>end</c>. Without these, lines like <c>end loop;</c> inside a
+            for-loop or <c>end case;</c> inside a process body would prematurely
+            terminate the architecture and feed Synthesize() a truncated chunk.
+            </summary>
+        </member>
+        <member name="M:Debugger.Repositories.Parser.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Debugger.Repositories.Parser"/> class.
+            </summary>
+            <param name="filePath">The path to the VHDL file to parse.</param>
+            <exception cref="T:System.IO.FileNotFoundException">Thrown if the specified file does not exist.</exception>
+            <remarks>
+            The constructor reads the entire file content into memory during initialization.
+            </remarks>
+        </member>
+        <member name="M:Debugger.Repositories.Parser.ParseFile">
+            <summary>
+            Parses the VHDL file content to identify and create Entity and Architecture objects.
+            </summary>
+            <remarks>
+            <para>
+            <b>Processing Steps:</b>
+            <list type="number">
+            <item><description>Split file content into lines and normalize whitespace</description></item>
+            <item><description>Iterate through lines using state machine (it variable)</description></item>
+            <item><description>When "entity" keyword found, switch to entity collection mode (it=1)</description></item>
+            <item><description>When "architecture" keyword found, extract entity name and switch to architecture mode (it=2)</description></item>
+            <item><description>Collect lines until appropriate "end" keyword is found</description></item>
+            <item><description>Create Entity or Architecture objects from collected lines</description></item>
+            </list>
+            </para>
+            <para>
+            <b>Entity/Architecture Association:</b>
+            The architecture declaration specifies which entity it belongs to using the syntax:
+            <c>architecture ArchName of EntityName is</c>. The parser extracts the entity name
+            (at index 3 after splitting by space) and looks it up in the Entities list.
+            </para>
+            </remarks>
+            <exception cref="T:System.Exception">
+            Thrown with message "Entity not found" if an architecture references an entity
+            that was not previously parsed from the file.
+            </exception>
+        </member>
+        <member name="M:Debugger.Repositories.Parser.RunDiagnostics(System.String)">
+            <summary>
+            Lightweight source-level validator run after <see cref="M:Debugger.Repositories.Parser.ParseFile"/>.
+            Emits warning-level diagnostics for common student mistakes:
+            <list type="bullet">
+              <item><description>Statement-ending lines without the expected semicolon.</description></item>
+              <item><description>Mismatched begin / end depth.</description></item>
+            </list>
+            Runs character-by-character on the ORIGINAL <see cref="P:Debugger.Repositories.Parser.FileContent"/>
+            (not the whitespace-collapsed array used by ParseFile) so the
+            line/column coords it reports still match what the student sees in
+            Monaco.
+            </summary>
+        </member>
+        <member name="M:Debugger.Repositories.Parser.LooksLikeStatement(System.String)">
+            <summary>
+            Heuristic: does this stripped-and-lower-cased line look like a
+            statement that ought to end with a semicolon? Rules out declarations
+            whose terminators are handled by block parsers (entity/architecture/
+            process/if/case/when), library imports, and obvious keywords.
+            </summary>
+        </member>
+    </members>
+</doc>

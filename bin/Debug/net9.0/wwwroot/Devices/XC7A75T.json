@@ -1,0 +1,30 @@
+{
+  "model": "XC7A75T",
+  "family": "Artix-7",
+  "manufacturer": "AMD (Xilinx)",
+  "resources": {
+    "logic_units": 75520,
+    "logic_units_type": "Logic Cells",
+    "registers_flip_flops": 94400,
+    "memory_blocks": 105,
+    "memory_block_type": "Block RAM (36 Kbit)",
+    "memory_total_kbits": 3780,
+    "dsp_slices": 180,
+    "dsp_slice_type": "DSP48E1"
+  },
+  "clocking": {
+    "pll_count": 6,
+    "dcm_mmcm_count": 6,
+    "max_pll_output_mhz": 800,
+    "system_clock_mhz": 100
+  },
+  "power": {
+    "core_voltage_vccint_v": 1.0
+  },
+  "io": {
+    "max_user_io": 300,
+    "io_banks_count": null,
+    "supported_io_standards": null
+  },
+  "package_options": null
+}

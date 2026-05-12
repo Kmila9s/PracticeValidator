@@ -1,0 +1,30 @@
+{
+  "model": "LFE5U-45",
+  "family": "ECP5",
+  "manufacturer": "Lattice",
+  "resources": {
+    "logic_units": 44000,
+    "logic_units_type": "LUTs",
+    "registers_flip_flops": 44000,
+    "memory_blocks": 108,
+    "memory_block_type": "sysMEM EBR (18 Kbit)",
+    "memory_total_kbits": 1944,
+    "dsp_slices": 72,
+    "dsp_slice_type": "18x18 multiplier"
+  },
+  "clocking": {
+    "pll_count": 4,
+    "dcm_mmcm_count": 4,
+    "max_pll_output_mhz": null,
+    "system_clock_mhz": 25
+  },
+  "power": {
+    "core_voltage_vccint_v": 1.1
+  },
+  "io": {
+    "max_user_io": 259,
+    "io_banks_count": 7,
+    "supported_io_standards": null
+  },
+  "package_options": null
+}

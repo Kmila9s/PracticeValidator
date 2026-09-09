@@ -10,9 +10,15 @@
 // or the canonical solution doesn't actually meet the spec — exactly the
 // duds we don't want students hitting first.
 //
-// Usage:  dotnet run --project App/Kmila/Tools/PracticeValidator
+// Usage:  dotnet run --project PracticeValidator
 // Optional: pass --filter <substring> to limit the run to ids matching the
 // substring, useful for re-running just the previously failing ones.
+//
+// --audit-starters  Grade each STARTER (instead of the solution) against
+//                   its own tests. Any starter that passes is a bug: the
+//                   student could finish the lesson without modifying the
+//                   editor. A passing FromZero starter is especially wrong;
+//                   FixBug/FillGap starters MUST fail at the sampled outputs.
 
 using Kmila.Shared.Models.Practice;
 using Kmila.Shared.Services.Practice;
@@ -80,7 +86,13 @@ internal static class Program
             meta = meta.Where(m => m.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        Console.WriteLine($"[Validator] Manifest has {meta.Count} exercises (filter='{filter ?? "(none)"}').");
+        var auditStarters = args.Contains("--audit-starters");
+        var mode = auditStarters ? "AUDIT-STARTERS" : "VALIDATE-SOLUTIONS";
+        Console.WriteLine($"[Validator] Manifest has {meta.Count} exercises (filter='{filter ?? "(none)"}'). Mode: {mode}.");
+        if (auditStarters)
+        {
+            return await RunStarterAuditAsync(catalog, evaluator, meta);
+        }
         Console.WriteLine();
 
         var results = new List<ValidationResult>();
@@ -158,6 +170,191 @@ internal static class Program
 
         return bad == 0 ? 0 : 1;
     }
+
+    /// <summary>
+    /// Audits every starter.vhdl by running it through the same grader the
+    /// editor uses. Three buckets in the output report:
+    ///   • PASSING — starter passes without modification (the bug list).
+    ///   • COMPILE-ERROR — starter doesn't compile / has no entity. Expected
+    ///     for FromZero after the empty-starter migration.
+    ///   • FAILS-AS-INTENDED — wrong-answer / runtime error at the sampled
+    ///     outputs. Correct behavior for FixBug and FillGap starters.
+    /// Exit code: 0 when PASSING is empty, 1 otherwise.
+    /// </summary>
+    private static async Task<int> RunStarterAuditAsync(
+        PracticeCatalog catalog,
+        PracticeEvaluator evaluator,
+        IReadOnlyList<PracticeExerciseMeta> meta)
+    {
+        Console.WriteLine();
+        var passing       = new List<AuditRow>();
+        var compileErrors = new List<AuditRow>();
+        var failsIntended = new List<AuditRow>();
+        var loadFailures  = new List<AuditRow>();
+
+        int idx = 0;
+        foreach (var m in meta)
+        {
+            idx++;
+            Console.Write($"[{idx,3}/{meta.Count,3}] {m.Id,-32} ({m.Modality}/{m.Difficulty})  ... ");
+
+            var ex = await catalog.GetAsync(m.Id);
+            if (ex == null)
+            {
+                Console.WriteLine("LOAD-FAIL");
+                loadFailures.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), "load-fail"));
+                continue;
+            }
+
+            try
+            {
+                var verdict = await evaluator.GradeAsync(ex, ex.StarterVhdl);
+                if (verdict.Kind == PracticeVerdictKind.Solved)
+                {
+                    Console.WriteLine("PASSING  ← starter solves the lesson without edits");
+                    passing.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), "passing"));
+                }
+                else if (verdict.Kind == PracticeVerdictKind.BuildError)
+                {
+                    Console.WriteLine("compile-error (expected for empty FromZero)");
+                    compileErrors.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), verdict.BuildErrorMessage ?? "build error"));
+                }
+                else
+                {
+                    Console.WriteLine($"fails-as-intended ({verdict.Kind})");
+                    failsIntended.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), verdict.Kind.ToString()));
+                }
+            }
+            catch (Exception ex2)
+            {
+                Console.WriteLine($"THROW: {ex2.GetType().Name}: {ex2.Message}");
+                loadFailures.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), $"throw: {ex2.Message}"));
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("════════════════════════════════════════════════════════════");
+        Console.WriteLine($"  Total exercises:          {meta.Count}");
+        Console.WriteLine($"  ✗ Passing without edits:  {passing.Count}  (these are the bugs)");
+        Console.WriteLine($"  · Compile-error starters: {compileErrors.Count}  (FromZero expected here)");
+        Console.WriteLine($"  ✓ Failing as intended:    {failsIntended.Count}  (FixBug/FillGap correct)");
+        Console.WriteLine($"  ! Load/throw failures:    {loadFailures.Count}");
+        Console.WriteLine("════════════════════════════════════════════════════════════");
+
+        if (passing.Count > 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine("PASSING WITHOUT MODIFICATION — fix these starters:");
+            foreach (var row in passing.OrderBy(r => r.Modality).ThenBy(r => r.Id))
+            {
+                Console.WriteLine($"    • [{row.Modality,-9}] {row.Id,-32} ({row.Difficulty})");
+            }
+        }
+
+        if (loadFailures.Count > 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine("LOAD / THROW FAILURES — investigate manually:");
+            foreach (var row in loadFailures)
+            {
+                Console.WriteLine($"    • {row.Id,-32} {row.Detail}");
+            }
+        }
+
+        // Also emit a Markdown report next to the working directory so the
+        // human running the audit has a file to attach to the issue tracker.
+        try
+        {
+            var report = BuildMarkdownAuditReport(meta.Count, passing, compileErrors, failsIntended, loadFailures);
+            var outPath = Path.Combine(Directory.GetCurrentDirectory(), "audit-starters.md");
+            await File.WriteAllTextAsync(outPath, report);
+            Console.WriteLine();
+            Console.WriteLine($"[Validator] Markdown report → {outPath}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[Validator] Failed to write markdown report: {ex.Message}");
+        }
+
+        return passing.Count == 0 ? 0 : 1;
+    }
+
+    private static string BuildMarkdownAuditReport(
+        int total,
+        IReadOnlyList<AuditRow> passing,
+        IReadOnlyList<AuditRow> compileErrors,
+        IReadOnlyList<AuditRow> failsIntended,
+        IReadOnlyList<AuditRow> loadFailures)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("# Practice starter audit");
+        sb.AppendLine();
+        sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine();
+        sb.AppendLine($"- Total exercises: **{total}**");
+        sb.AppendLine($"- Passing without modification: **{passing.Count}** ← bugs");
+        sb.AppendLine($"- Compile-error starters: **{compileErrors.Count}** (FromZero expected)");
+        sb.AppendLine($"- Failing as intended: **{failsIntended.Count}** (FixBug/FillGap correct)");
+        sb.AppendLine($"- Load/throw failures: **{loadFailures.Count}**");
+        sb.AppendLine();
+        sb.AppendLine("## Passing without modification");
+        sb.AppendLine();
+        if (passing.Count == 0)
+        {
+            sb.AppendLine("_None — every starter requires at least one edit to pass._");
+        }
+        else
+        {
+            sb.AppendLine("| Modality | Difficulty | Id |");
+            sb.AppendLine("|---|---|---|");
+            foreach (var row in passing.OrderBy(r => r.Modality).ThenBy(r => r.Id))
+                sb.AppendLine($"| {row.Modality} | {row.Difficulty} | `{row.Id}` |");
+        }
+        sb.AppendLine();
+        sb.AppendLine("## Compile-error starters");
+        sb.AppendLine();
+        if (compileErrors.Count == 0)
+        {
+            sb.AppendLine("_None._");
+        }
+        else
+        {
+            sb.AppendLine("| Modality | Difficulty | Id | Build error |");
+            sb.AppendLine("|---|---|---|---|");
+            foreach (var row in compileErrors.OrderBy(r => r.Modality).ThenBy(r => r.Id))
+                sb.AppendLine($"| {row.Modality} | {row.Difficulty} | `{row.Id}` | {Truncate(row.Detail, 80)} |");
+        }
+        sb.AppendLine();
+        sb.AppendLine("## Failing as intended");
+        sb.AppendLine();
+        if (failsIntended.Count == 0)
+        {
+            sb.AppendLine("_None._");
+        }
+        else
+        {
+            sb.AppendLine("| Modality | Difficulty | Id | Verdict |");
+            sb.AppendLine("|---|---|---|---|");
+            foreach (var row in failsIntended.OrderBy(r => r.Modality).ThenBy(r => r.Id))
+                sb.AppendLine($"| {row.Modality} | {row.Difficulty} | `{row.Id}` | {row.Detail} |");
+        }
+        if (loadFailures.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("## Load / throw failures");
+            sb.AppendLine();
+            sb.AppendLine("| Id | Detail |");
+            sb.AppendLine("|---|---|");
+            foreach (var row in loadFailures)
+                sb.AppendLine($"| `{row.Id}` | {Truncate(row.Detail, 120)} |");
+        }
+        return sb.ToString();
+    }
+
+    private static string Truncate(string s, int max)
+        => string.IsNullOrEmpty(s) ? string.Empty : (s.Length <= max ? s : s.Substring(0, max - 1) + "…");
+
+    private record AuditRow(string Id, string Modality, string Difficulty, string Detail);
 
     /// <summary>
     /// Searches up the directory tree for <c>App/Kmila/Kmila.Shared/wwwroot/Practice</c>,

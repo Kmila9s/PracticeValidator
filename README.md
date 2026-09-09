@@ -10,7 +10,7 @@ Part of **Kmila-9s** — *Aplicación Multiplataforma para el Aprendizaje y Depu
 Código VHDL sin Requerimiento de Hardware Físico* (TT 2026-B059, IPN ESCOM).
 
 **Author:** Ulrich Tamayo Daniel
-**Last verified:** 2026-05-09
+**Last verified:** 2026-08-03
 
 ---
 
@@ -116,10 +116,10 @@ flowchart TD
 
 | Symbol | Lines | Purpose |
 |---|---|---|
-| `Program` (class) | `Program.cs:23` | Static host class for the validator. |
-| `Program.Main` | `Program.cs:42` | Async entry point — orchestrates resolve → catalog/evaluator init → per-exercise grade → tally → exit code. |
-| `Program.ResolvePracticeRoot` | `Program.cs:158` | Walks up the directory tree looking for `App/Kmila/Kmila.Shared/wwwroot/Practice` (and a few alternative roots so the tool works from inside `App/Kmila/`). |
-| `Program.ValidationResult` (record) | `Program.cs:188` | Per-exercise grading outcome (`Id`, `Status`, optional `Detail`). |
+| `Program` (class) | `Program.cs:35` | Static host class for the validator. |
+| `Program.Main` | `Program.cs:51` | Async entry point — orchestrates resolve → catalog/evaluator init → per-exercise grade → tally → exit code. Accepts `--audit-starters` flag (`Program.cs:89`) that writes `audit-starters.md` (`Program.cs:269`) — a report of every starter exercise that passes without the student having to do anything. |
+| `Program.ResolvePracticeRoot` | `Program.cs:368` | Walks up the directory tree looking for `App/Kmila/Kmila.Shared/wwwroot/Practice` (and a few alternative roots so the tool works from inside `App/Kmila/`). |
+| `Program.ValidationResult` (record) | `Program.cs:397` | Per-exercise grading outcome (`Id`, `Status`, optional `Detail`). |
 
 The program uses `Microsoft.Extensions.Logging.Abstractions.NullLogger<T>` for both
 `PracticeCatalog` and `PracticeEvaluator` so the tool's stdout stays a clean,

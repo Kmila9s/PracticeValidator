@@ -4,7 +4,7 @@
 // PracticeEvaluator to grade the canonical solution against its own test
 // cases, and reports any exercise where the solution itself doesn't pass.
 //
-// A green run means: every solution.vhdl parses, simulates, and produces
+// A green run means: every solution variant parses, simulates, and produces
 // outputs that match its own self-grader. A red run flags exercises where
 // the simulator chokes (parse / runtime), the test-case inputs are wrong,
 // or the canonical solution doesn't actually meet the spec — exactly the
@@ -20,6 +20,7 @@
 //                   editor. A passing FromZero starter is especially wrong;
 //                   FixBug/FillGap starters MUST fail at the sampled outputs.
 
+using Kmila.Frontend;
 using Kmila.Shared.Models.Practice;
 using Kmila.Shared.Services.Practice;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -65,7 +66,7 @@ internal static class Program
             openFileAsync: async path =>
             {
                 // Catalog uses paths like "Practice/manifest.json" and
-                // "Practice/m1-from-zero/easy/01-half-adder/solution.vhdl".
+                // "Practice/m1-from-zero/easy/01-half-adder/<variant file>".
                 // Strip the leading "Practice/" since we already rooted there.
                 var rel = path.StartsWith("Practice/", StringComparison.Ordinal)
                     ? path["Practice/".Length..]
@@ -110,39 +111,10 @@ internal static class Program
                 continue;
             }
 
-            // Grade the canonical solution against its own tests. A correct
-            // exercise should come back Solved on every test case.
-            try
-            {
-                var verdict = await evaluator.GradeAsync(ex, ex.SolutionVhdl);
-                if (verdict.Kind == PracticeVerdictKind.Solved)
-                {
-                    Console.WriteLine($"OK  ({verdict.TotalDurationMs} ms)");
-                    results.Add(new ValidationResult(m.Id, "ok", null));
-                }
-                else
-                {
-                    var firstFail = verdict.TestResults.FirstOrDefault(r => !r.Passed);
-                    var detail = verdict.Kind switch
-                    {
-                        PracticeVerdictKind.BuildError => $"build-error: {verdict.BuildErrorMessage}",
-                        PracticeVerdictKind.RuntimeError => $"runtime: {(firstFail?.ErrorClass ?? "unknown")}",
-                        PracticeVerdictKind.WrongAnswer => firstFail == null
-                            ? "wrong-answer (no fail row?)"
-                            : $"WA at {firstFail.TestCaseId}: {firstFail.FirstMismatchSignal}@{firstFail.FirstMismatchTimeNs}ns " +
-                              $"actual={firstFail.ActualAtMismatch} expected={firstFail.ExpectedAtMismatch}",
-                        _ => verdict.Kind.ToString()
-                    };
-                    Console.WriteLine($"{verdict.Kind.ToString().ToUpperInvariant()}");
-                    Console.WriteLine($"      └─ {detail}");
-                    results.Add(new ValidationResult(m.Id, verdict.Kind.ToString(), detail));
-                }
-            }
-            catch (Exception ex2)
-            {
-                Console.WriteLine($"THROW: {ex2.GetType().Name}: {ex2.Message}");
-                results.Add(new ValidationResult(m.Id, "throw", $"{ex2.GetType().Name}: {ex2.Message}"));
-            }
+            // Grade the canonical solution of every supported language against
+            // its own tests. A missing variant is a failure, never a skip.
+            foreach (var language in HdlLanguages.Supported)
+                results.Add(await GradeSolutionAsync(evaluator, ex, language));
         }
 
         Console.WriteLine();
@@ -172,7 +144,50 @@ internal static class Program
     }
 
     /// <summary>
-    /// Audits every starter.vhdl by running it through the same grader the
+    /// Grades the <paramref name="language"/> solution of <paramref name="ex"/>
+    /// against its own tests and prints the one-line outcome. A missing
+    /// variant is reported as a failure.
+    /// </summary>
+    private static async Task<ValidationResult> GradeSolutionAsync(PracticeEvaluator evaluator, PracticeExercise ex, HdlLanguage language)
+    {
+        var id = $"{ex.Id} [{language.Id}]";
+        if (ex.Variants.For(language) is not { } variant)
+        {
+            Console.WriteLine($"MISSING-VARIANT ({language.Id})");
+            return new ValidationResult(id, "missing-variant", $"no {language.DisplayName} variant");
+        }
+        try
+        {
+            var verdict = await evaluator.GradeAsync(ex, language, variant.Solution);
+            if (verdict.Kind == PracticeVerdictKind.Solved)
+            {
+                Console.WriteLine($"OK  ({verdict.TotalDurationMs} ms)");
+                return new ValidationResult(id, "ok", null);
+            }
+            var firstFail = verdict.TestResults.FirstOrDefault(r => !r.Passed);
+            var detail = verdict.Kind switch
+            {
+                PracticeVerdictKind.BuildError => $"build-error: {verdict.BuildErrorMessage}",
+                PracticeVerdictKind.RuntimeError => $"runtime: {(firstFail?.ErrorClass ?? "unknown")}",
+                PracticeVerdictKind.WrongAnswer => firstFail == null
+                    ? "wrong-answer (no fail row?)"
+                    : $"WA at {firstFail.TestCaseId}: {firstFail.FirstMismatchSignal}@{firstFail.FirstMismatchTimeNs}ns " +
+                      $"actual={firstFail.ActualAtMismatch} expected={firstFail.ExpectedAtMismatch}",
+                _ => verdict.Kind.ToString()
+            };
+            Console.WriteLine(verdict.Kind.ToString().ToUpperInvariant());
+            Console.WriteLine($"      └─ {detail}");
+            return new ValidationResult(id, verdict.Kind.ToString(), detail);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"THROW: {e.GetType().Name}: {e.Message}");
+            return new ValidationResult(id, "throw", $"{e.GetType().Name}: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Audits every starter variant by running it through the same grader the
     /// editor uses. Three buckets in the output report:
     ///   • PASSING — starter passes without modification (the bug list).
     ///   • COMPILE-ERROR — starter doesn't compile / has no entity. Expected
@@ -206,29 +221,39 @@ internal static class Program
                 continue;
             }
 
-            try
+            foreach (var language in HdlLanguages.Supported)
             {
-                var verdict = await evaluator.GradeAsync(ex, ex.StarterVhdl);
-                if (verdict.Kind == PracticeVerdictKind.Solved)
+                var row = $"{m.Id} [{language.Id}]";
+                if (ex.Variants.For(language) is not { } variant)
                 {
-                    Console.WriteLine("PASSING  ← starter solves the lesson without edits");
-                    passing.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), "passing"));
+                    Console.WriteLine($"MISSING-VARIANT ({language.Id})");
+                    loadFailures.Add(new AuditRow(row, m.Modality.ToString(), m.Difficulty.ToString(), "missing-variant"));
+                    continue;
                 }
-                else if (verdict.Kind == PracticeVerdictKind.BuildError)
+                try
                 {
-                    Console.WriteLine("compile-error (expected for empty FromZero)");
-                    compileErrors.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), verdict.BuildErrorMessage ?? "build error"));
+                    var verdict = await evaluator.GradeAsync(ex, language, variant.Starter);
+                    if (verdict.Kind == PracticeVerdictKind.Solved)
+                    {
+                        Console.WriteLine("PASSING  ← starter solves the lesson without edits");
+                        passing.Add(new AuditRow(row, m.Modality.ToString(), m.Difficulty.ToString(), "passing"));
+                    }
+                    else if (verdict.Kind == PracticeVerdictKind.BuildError)
+                    {
+                        Console.WriteLine("compile-error (expected for empty FromZero)");
+                        compileErrors.Add(new AuditRow(row, m.Modality.ToString(), m.Difficulty.ToString(), verdict.BuildErrorMessage ?? "build error"));
+                    }
+                    else
+                    {
+                        Console.WriteLine($"fails-as-intended ({verdict.Kind})");
+                        failsIntended.Add(new AuditRow(row, m.Modality.ToString(), m.Difficulty.ToString(), verdict.Kind.ToString()));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Console.WriteLine($"fails-as-intended ({verdict.Kind})");
-                    failsIntended.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), verdict.Kind.ToString()));
+                    Console.WriteLine($"THROW: {e.GetType().Name}: {e.Message}");
+                    loadFailures.Add(new AuditRow(row, m.Modality.ToString(), m.Difficulty.ToString(), $"throw: {e.Message}"));
                 }
-            }
-            catch (Exception ex2)
-            {
-                Console.WriteLine($"THROW: {ex2.GetType().Name}: {ex2.Message}");
-                loadFailures.Add(new AuditRow(m.Id, m.Modality.ToString(), m.Difficulty.ToString(), $"throw: {ex2.Message}"));
             }
         }
 

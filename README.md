@@ -28,7 +28,8 @@ Código VHDL sin Requerimiento de Hardware Físico* (TT 2026-B059, IPN ESCOM).
    `PracticeEvaluator` services that the runtime app uses, just wired to a plain
    filesystem opener instead of MAUI's content stream.
 3. Iterates over every entry in `manifest.json` (optionally filtered) and asks the
-   evaluator to grade `solution.vhdl` against its own test cases.
+   evaluator to grade each language variant's solution (manifest schema v2,
+   `variants.<lang>.solution`) against its own test cases. A missing variant is a failure.
 4. Prints a per-exercise verdict (`OK`, `BUILDERROR`, `WRONGANSWER`, `RUNTIMEERROR`,
    `LOAD-FAIL`, `THROW: <type>`) plus a final tally grouped by failure class.
 
@@ -67,7 +68,7 @@ dotnet build PracticeValidator
 
 - **`Practice/manifest.json`** — declares the list of exercises with their id,
   modality, and difficulty.
-- **`Practice/<modality>/<difficulty>/<id>/solution.vhdl`** — the canonical solution
+- **`Practice/<modality>/<difficulty>/<id>/<variants.<lang>.solution>`** (today `solution.vhdl`) — the canonical solution
   the validator grades.
 - **`Practice/<modality>/<difficulty>/<id>/tests.json`** — the test cases used by
   `PracticeEvaluator` for grading.
@@ -92,7 +93,7 @@ flowchart TD
     I --> J[catalog.GetAsync id]
     J --> K{Catalog<br/>build OK?}
     K -- no --> L[Record load-fail]
-    K -- yes --> M[evaluator.GradeAsync<br/>solution.vhdl]
+    K -- yes --> M[evaluator.GradeAsync<br/>solution per language]
     M --> N{Verdict.Kind}
     N -- Solved --> O[Record ok]
     N -- BuildError / RuntimeError / WrongAnswer --> P[Record verdict + first-fail detail]
@@ -132,7 +133,7 @@ parseable stream of validation lines.
 
 ```mermaid
 flowchart LR
-    Author[Exercise author<br/>edits manifest.json + solution.vhdl + tests.json]
+    Author[Exercise author<br/>edits manifest.json + solution/starter variants + tests.json]
     Validator[PracticeValidator CLI]
     Catalog[(PracticeCatalog)]
     Evaluator[(PracticeEvaluator)]
@@ -177,8 +178,8 @@ sequenceDiagram
     loop Por cada exercise
         CLI->>Cat: GetAsync(id)
         Cat-->>CLI: PracticeExercise (Solution + TestCases)
-        CLI->>Eval: GradeAsync(ex, ex.SolutionVhdl)
-        Eval->>PB: Build(SolutionVhdl)
+        CLI->>Eval: GradeAsync(ex, language, variant.Solution)
+        Eval->>PB: Build(variant.Solution)
         alt Build error
             PB-->>Eval: BuildPhaseException
             Eval-->>CLI: Verdict BuildError

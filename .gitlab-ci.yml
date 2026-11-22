@@ -1,0 +1,24 @@
+# CI for kmila-9s/PracticeValidator (Fase 0, v3.0.12): every practice's solution,
+# GHDL oracle (ratcheted by known-gaps.json) and starter, with GHDL from
+# ci-templates' .ghdl-6.
+include:
+    - project: 'kmila-9s/ci-templates'
+      file: '/auto-merge.yml'
+    - project: 'kmila-9s/ci-templates'
+      file: '/ghdl.yml'
+
+stages:
+    - test
+    - merge
+
+variables:
+    GIT_DEPTH: "20"
+
+practice-validator:
+    stage: test
+    extends: .ghdl-6
+    script:
+        - rm -rf ../Parser ../LibraryCompiler ../Interpreter ../TimeMachine ../Debugger ../App
+        - for r in Parser LibraryCompiler Interpreter TimeMachine Debugger; do git clone --depth 20 "http://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:8083/${CI_PROJECT_NAMESPACE}/$r.git" ../$r; done
+        - mkdir -p ../App && git clone --depth 20 "http://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:8083/${CI_PROJECT_NAMESPACE}/Kmila.git" ../App/Kmila
+        - dotnet run -c Release -p:TargetFrameworks=net10.0

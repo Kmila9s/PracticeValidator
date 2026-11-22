@@ -381,33 +381,8 @@ internal static class Program
 
     private record AuditRow(string Id, string Modality, string Difficulty, string Detail);
 
-    /// <summary>
-    /// Searches up the directory tree for <c>App/Kmila/Kmila.Shared/wwwroot/Practice</c>,
-    /// so the tool works from any working directory (repo root, App/Kmila, or the
-    /// validator's own folder).
-    /// </summary>
-    /// <returns>
-    /// The absolute path to the resolved Practice content directory, or <c>null</c>
-    /// if no candidate directory was found while walking up to the filesystem root.
-    /// </returns>
-    private static string? ResolvePracticeRoot()
-    {
-        var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
-        while (dir != null)
-        {
-            var candidate = Path.Combine(dir.FullName, "App", "Kmila", "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return candidate;
-            // Also handle running from inside App/Kmila/Tools/PracticeValidator/
-            candidate = Path.Combine(dir.FullName, "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return candidate;
-            candidate = Path.Combine(dir.FullName, "..", "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return Path.GetFullPath(candidate);
-            candidate = Path.Combine(dir.FullName, "..", "..", "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return Path.GetFullPath(candidate);
-            dir = dir.Parent;
-        }
-        return null;
-    }
+    /// <summary>The Practice content folder of the source checkout (see <c>SharedContentPaths</c>), or null.</summary>
+    private static string? ResolvePracticeRoot() => Kmila.Shared.Services.SharedContentPaths.Find("Practice");
 
     /// <summary>
     /// Aggregated outcome of grading a single practice exercise during a validation run.

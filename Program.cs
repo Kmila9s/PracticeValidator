@@ -16,7 +16,6 @@
 using Kmila.Frontend;
 using Kmila.Shared.Models.Practice;
 using Kmila.Shared.Services.Practice;
-using Kmila.Shared.Services.Vcd;
 using Kmila.TestKit.Cases;
 using Kmila.TestKit.Practice;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -110,7 +109,7 @@ internal static class Program
                 Console.WriteLine($"solution={(solution.Kind == PracticeVerdictKind.Solved ? "ok" : solution.Kind.ToString())}  " +
                     $"oracle={(agree ? "ok" : "DIFF")}  starter={(starterFails ? "fails-as-intended" : "PASSES")}");
                 foreach (var o in oracle.Where(o => !o.Pass))
-                    Console.WriteLine($"      └─ {o.TestId}: {o.Error ?? string.Join("; ", o.Diff!.Where(d => !d.Equal).Select(DescribeDiff))}");
+                    Console.WriteLine($"      └─ {o.TestId}: {o.Error ?? string.Join("; ", o.Diff!.Where(d => !d.Equal).Select(d => d.Describe("reference", "kmila")))}");
             }
         }
 
@@ -152,10 +151,6 @@ internal static class Program
             _ => $"{v.Kind}: {first?.ErrorClass ?? v.BuildErrorMessage}",
         };
     }
-
-    private static string DescribeDiff(SignalDiff d) =>
-        d.Missing != MissingSide.None ? $"{d.Signal} {d.MissingFrom("reference", "kmila")}"
-        : $"{d.Signal} {d.Mismatches}/{d.Samples}" + (d.Examples.Count > 0 ? $" (t={d.Examples[0].TimeFs / Interpreter.Models.PhysicalTime.FsPerNs}ns reference={d.Examples[0].Expected} kmila={d.Examples[0].Actual})" : "");
 
     /// <summary>The oracle's known gaps, next to this project.</summary>
     private static string KnownGapsPath()

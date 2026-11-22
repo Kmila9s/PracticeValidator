@@ -1,213 +1,98 @@
-# PracticeValidator
+<p align="right"><a href="README.es.md">Español</a></p>
 
-CLI tool that checks every practice shipped under `wwwroot/Practice/`, for every
-supported HDL language (a missing variant is a failure):
+<p align="center"><img src="docs/assets/banner-en.png" alt="PracticeValidator — Validates every practice against GHDL" width="100%"></p>
 
-1. **solution** — the canonical solution passes its own tests in Kmila's grader;
-2. **oracle** (v3.0.9) — Kmila and the language's reference simulator (GHDL 6 for VHDL)
-   agree on the graded outputs at the graded instants, running the solution under the
-   same stimulus (`Kmila.TestKit`: `PracticeOracle` builds a testbench from the very
-   `SimulationConfig` Kmila executes; the design is never modified). Disagreements must
-   be listed in `known-gaps.json` (ratchet: an unlisted one, or a listed one that agrees,
-   fails the run);
-3. **starter** — the starter does not pass unmodified.
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3c82f6" alt="License: MIT"></a> <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/.NET-10-475569" alt=".NET 10"></a> <a href="https://kmila.com.mx"><img src="https://img.shields.io/badge/HDL-VHDL-475569" alt="VHDL"></a> <a href="https://github.com/Kmila9s/PracticeValidator/releases"><img src="https://img.shields.io/github/v/release/Kmila9s/PracticeValidator?color=3c82f6&label=release" alt="Release"></a></p>
 
-`dotnet run -c Release [-- --filter <substring>]`; exit 0 only when all three hold.
-The old `--audit-starters` mode is folded into the default run.
+<p align="center">
+  <a href="https://kmila.com.mx/demo"><b>Try the browser demo</b></a> · <a href="https://kmila.com.mx">Website</a> · <a href="https://github.com/Kmila9s/Documentation/releases">User manual (PDF) and thesis</a>
+</p>
 
-## Project: Kmila-9s
+## What it is
 
-Part of **Kmila-9s** — *Aplicación Multiplataforma para el Aprendizaje y Depuración de
-Código VHDL sin Requerimiento de Hardware Físico* (TT 2026-B059, IPN ESCOM).
+A CLI that checks every practice shipped with Kmila, for every supported HDL: the reference solution passes its tests, Kmila and GHDL agree on the graded outputs at the graded instants, and the starter code does not pass unmodified.
 
-**Author:** Ulrich Tamayo Daniel
-**Last verified:** 2026-08-03
+<p align="center"><img src="docs/assets/screenshot.png" alt="" width="90%"></p>
 
-> **Docs sync 2026-09-24** — no functional change to this tool this cycle; the
-> 2026-09-23 feature batch (v1.27.0) is **app-only** (see `App/Kmila/README.md` §19).
-
----
-
-## What it does
-
-`PracticeValidator` is a stand-alone console executable that:
-
-1. Walks up from the current working directory until it finds
-   `App/Kmila/Kmila.Shared/wwwroot/Practice/` (so it can be launched from the repo
-   root, from `App/Kmila/`, or from inside the tool itself).
-2. Loads the practice catalog through the same `PracticeCatalog` /
-   `PracticeEvaluator` services that the runtime app uses, just wired to a plain
-   filesystem opener instead of MAUI's content stream.
-3. Iterates over every entry in `manifest.json` (optionally filtered) and asks the
-   evaluator to grade each language variant's solution (manifest schema v2,
-   `variants.<lang>.solution`) against its own test cases. A missing variant is a failure.
-4. Prints a per-exercise verdict (`OK`, `BUILDERROR`, `WRONGANSWER`, `RUNTIMEERROR`,
-   `LOAD-FAIL`, `THROW: <type>`) plus a final tally grouped by failure class.
-
-A green run guarantees that every shipped solution parses, simulates, and matches
-its own self-grader. A red run flags exercises that need fixing.
-
-## How to run
-
-From the repo root:
+## Quick start
 
 ```bash
-dotnet run --project PracticeValidator
-```
-
-Filter to a subset of exercises by id substring (case-insensitive):
-
-```bash
+# requires the Kmila repo next to this one and GHDL 6 on PATH
+dotnet run --project PracticeValidator -c Release
 dotnet run --project PracticeValidator -- --filter half-adder
 ```
 
-Build only (no run):
-
-```bash
-dotnet build PracticeValidator
-```
-
-## Exit codes
-
-| Code | Meaning |
-|------|---------|
-| `0`  | All graded exercises returned `Solved`. |
-| `1`  | At least one exercise failed grading (build error, wrong answer, runtime error, load failure, or thrown exception). |
-| `2`  | Could not locate `wwwroot/Practice` while walking up from the current directory. |
-
-## Inputs
-
-- **`Practice/manifest.json`** — declares the list of exercises with their id,
-  modality, and difficulty.
-- **`Practice/<modality>/<difficulty>/<id>/<variants.<lang>.solution>`** (today `solution.vhdl`) — the canonical solution
-  the validator grades.
-- **`Practice/<modality>/<difficulty>/<id>/tests.json`** — the test cases used by
-  `PracticeEvaluator` for grading.
-
-Paths in the manifest are rooted at `Practice/`; the validator strips that prefix
-since the resolver already points at the absolute Practice directory.
-
-## Validation flow
-
-```mermaid
-flowchart TD
-    A[CLI start] --> B{Locate<br/>wwwroot/Practice}
-    B -- not found --> X([Exit 2])
-    B -- found --> C[Build PracticeCatalog<br/>with FS opener]
-    C --> D[Build PracticeEvaluator]
-    D --> E[catalog.ListAsync]
-    E --> F{--filter passed?}
-    F -- yes --> G[Filter ids by substring]
-    F -- no --> H[Use full list]
-    G --> I[For each manifest entry]
-    H --> I
-    I --> J[catalog.GetAsync id]
-    J --> K{Catalog<br/>build OK?}
-    K -- no --> L[Record load-fail]
-    K -- yes --> M[evaluator.GradeAsync<br/>solution per language]
-    M --> N{Verdict.Kind}
-    N -- Solved --> O[Record ok]
-    N -- BuildError / RuntimeError / WrongAnswer --> P[Record verdict + first-fail detail]
-    N -- throw --> Q[Record throw + exception]
-    L --> R{More entries?}
-    O --> R
-    P --> R
-    Q --> R
-    R -- yes --> I
-    R -- no --> S[Print totals]
-    S --> T{any failures?}
-    T -- yes --> U([Exit 1])
-    T -- no --> V([Exit 0])
-```
-
-## File walk
-
-| File | Role |
-|------|------|
-| `PracticeValidator.csproj` | net9.0 console exe; references `App/Kmila/Kmila.Shared/Kmila.Shared.csproj` for the catalog + evaluator + models. Suppresses `CS1591`/`CS1998`/`NETSDK1206`. Sets `ServerGarbageCollection=false` to favour Workstation GC. |
-| `Program.cs` | Single-file program. |
-
-### `Program.cs` — key declarations
-
-| Symbol | Lines | Purpose |
-|---|---|---|
-| `Program` (class) | `Program.cs:35` | Static host class for the validator. |
-| `Program.Main` | `Program.cs:51` | Async entry point — orchestrates resolve → catalog/evaluator init → per-exercise grade → tally → exit code. Accepts `--audit-starters` flag (`Program.cs:89`) that writes `audit-starters.md` (`Program.cs:269`) — a report of every starter exercise that passes without the student having to do anything. |
-| `Program.ResolvePracticeRoot` | `Program.cs:368` | Walks up the directory tree looking for `App/Kmila/Kmila.Shared/wwwroot/Practice` (and a few alternative roots so the tool works from inside `App/Kmila/`). |
-| `Program.ValidationResult` (record) | `Program.cs:397` | Per-exercise grading outcome (`Id`, `Status`, optional `Detail`). |
-
-The program uses `Microsoft.Extensions.Logging.Abstractions.NullLogger<T>` for both
-`PracticeCatalog` and `PracticeEvaluator` so the tool's stdout stays a clean,
-parseable stream of validation lines.
-
-## Where it fits in the pipeline
+## Where it fits
 
 ```mermaid
 flowchart LR
-    Author[Exercise author<br/>edits manifest.json + solution/starter variants + tests.json]
-    Validator[PracticeValidator CLI]
-    Catalog[(PracticeCatalog)]
-    Evaluator[(PracticeEvaluator)]
-    Sim[(Simulation pipeline:<br/>Parser → Interpreter → TimeMachine)]
-    Author --> Validator
-    Validator --> Catalog
-    Validator --> Evaluator
-    Evaluator --> Sim
-    Validator --> Report[stdout report<br/>+ exit code 0/1/2]
+  kmila["Kmila<br/>app · web · CLI"]
+  debugger["Debugger"]
+  interpreter["Interpreter"]
+  parser["Parser"]
+  librarycompiler["LibraryCompiler"]
+  timemachine["TimeMachine"]
+  practicevalidator["PracticeValidator"]
+  simulatorbench["SimulatorBench"]
+  tests["Tests"]
+  ghdl["GHDL 6<br/>(reference)"]
+  kmila-->debugger
+  kmila-->interpreter
+  kmila-->librarycompiler
+  debugger-->interpreter
+  interpreter-->parser
+  interpreter-->timemachine
+  interpreter-->librarycompiler
+  librarycompiler-->parser
+  practicevalidator-->kmila
+  simulatorbench-->kmila
+  tests-->kmila
+  practicevalidator-.->ghdl
+  simulatorbench-.->ghdl
+  classDef me fill:#3c82f6,stroke:#1d4ed8,color:#fff
+  classDef other fill:#475569,stroke:#334155,color:#fff
+  classDef ext fill:#94a3b8,stroke:#64748b,color:#0f172a
+  class kmila,debugger,interpreter,parser,librarycompiler,timemachine,simulatorbench,tests other
+  class ghdl ext
+  class practicevalidator me
+  click kmila "https://github.com/Kmila9s/Kmila"
+  click debugger "https://github.com/Kmila9s/Debugger"
+  click interpreter "https://github.com/Kmila9s/Interpreter"
+  click parser "https://github.com/Kmila9s/Parser"
+  click librarycompiler "https://github.com/Kmila9s/LibraryCompiler"
+  click timemachine "https://github.com/Kmila9s/TimeMachine"
+  click practicevalidator "https://github.com/Kmila9s/PracticeValidator"
+  click simulatorbench "https://github.com/Kmila9s/SimulatorBench"
+  click tests "https://github.com/Kmila9s/Tests"
 ```
 
-`PracticeEvaluator.GradeAsync` reuses the same simulation pipeline that powers the
-in-app practice mode. So a green validator run is direct evidence that the
-exercises will grade correctly inside the application as well.
+<sub>Arrows point from a project to what it uses (project references). The highlighted box is this repository.</sub>
 
-## Notes
+## Documentation
 
-- The validator runs grading **synchronously, one exercise at a time**, to keep the
-  log linear and easy to scan.
-- Exit code `1` is returned for any non-`ok` status; the breakdown by failure class
-  is printed at the bottom for triage.
-- Output is uncolored ASCII so it pipes cleanly into CI logs.
+- [Technical reference (architecture, API, changelog)](docs/reference.md)
+- [User manual (PDF) and thesis](https://github.com/Kmila9s/Documentation/releases)
 
-## Audit diagrams (2026-05-09)
+## The Kmila family
 
-This module also lives in `Documentacion/TT1/diagrams/` as `.mmd` source. The block
-below is the canonical sequence diagram for the CLI grading flow.
+| | | |
+|---|---|---|
+| <img src="https://github.com/Kmila9s/Kmila/raw/main/docs/assets/icon.png" width="28" alt=""> | [**Kmila**](https://github.com/Kmila9s/Kmila) | Write, simulate and debug HDL without an FPGA |
+| <img src="https://github.com/Kmila9s/Parser/raw/main/docs/assets/icon.png" width="28" alt=""> | [**Parser**](https://github.com/Kmila9s/Parser) | VHDL lexer and front-door parsing for Kmila |
+| <img src="https://github.com/Kmila9s/Interpreter/raw/main/docs/assets/icon.png" width="28" alt=""> | [**Interpreter**](https://github.com/Kmila9s/Interpreter) | Delta-cycle HDL simulation engine and synthesis |
+| <img src="https://github.com/Kmila9s/Debugger/raw/main/docs/assets/icon.png" width="28" alt=""> | [**Debugger**](https://github.com/Kmila9s/Debugger) | Structural checks and lint for VHDL designs |
+| <img src="https://github.com/Kmila9s/LibraryCompiler/raw/main/docs/assets/icon.png" width="28" alt=""> | [**LibraryCompiler**](https://github.com/Kmila9s/LibraryCompiler) | IEEE libraries, use clauses and primitive lowering |
+| <img src="https://github.com/Kmila9s/TimeMachine/raw/main/docs/assets/icon.png" width="28" alt=""> | [**TimeMachine**](https://github.com/Kmila9s/TimeMachine) | Discrete time base: ticks, clocks and events |
+| <img src="https://github.com/Kmila9s/SimulatorBench/raw/main/docs/assets/icon.png" width="28" alt=""> | [**SimulatorBench**](https://github.com/Kmila9s/SimulatorBench) | Kmila vs GHDL accuracy bench |
+| <img src="https://github.com/Kmila9s/Tests/raw/main/docs/assets/icon.png" width="28" alt=""> | [**Tests**](https://github.com/Kmila9s/Tests) | Unit, end-to-end and performance suites |
+| <img src="https://github.com/Kmila9s/Documentation/raw/main/docs/assets/icon.png" width="28" alt=""> | [**Documentation**](https://github.com/Kmila9s/Documentation/releases) | Thesis and user manual (PDF) |
 
-### `fig_5_8_5_seq_practice_grading` — Practice grading sequence
+## Contributing
 
-```mermaid
-sequenceDiagram
-    participant CLI as PracticeValidator (Program)
-    participant Cat as PracticeCatalog
-    participant Eval as PracticeEvaluator
-    participant PB as ProgramBuilder
-    participant SR as SimulationRunner
+Issues and merge requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-    CLI->>CLI: ResolvePracticeRoot (walks up to wwwroot/Practice)
-    CLI->>Cat: BuildAsync (manifest + assets)
-    Cat-->>CLI: List PracticeExerciseMeta
-    loop Por cada exercise
-        CLI->>Cat: GetAsync(id)
-        Cat-->>CLI: PracticeExercise (Solution + TestCases)
-        CLI->>Eval: GradeAsync(ex, language, variant.Solution)
-        Eval->>PB: Build(variant.Solution)
-        alt Build error
-            PB-->>Eval: BuildPhaseException
-            Eval-->>CLI: Verdict BuildError
-        else Build OK
-            loop Por cada TestCase
-                Eval->>SR: RunAsync(stimulus, duration)
-                SR-->>Eval: WaveformData esperada (cache)
-                Eval->>SR: RunAsync candidato (= solucion)
-                SR-->>Eval: WaveformData actual
-                Eval->>Eval: Compare por puerto x tiempo
-            end
-            Eval-->>CLI: PracticeAttemptVerdict (esperado: Solved)
-        end
-        CLI->>CLI: ValidationResult { Solved | BuildError | RuntimeError | WrongAnswer }
-    end
-    CLI->>CLI: Tally
-    CLI-->>CLI: ExitCode 0 si todos Solved, 1 si algun fallo
+## License
 
-    note over Eval: Compare:<br/>1) Para cada port en OutputPortsToCompare<br/>2) Para cada t en SampleTimesNs<br/>3) SampleAtNs(history, port, t) (step-function)<br/>4) abs(actual - expected) < 1e-9
-```
+MIT © 2026 Ulrich Tamayo Daniel. See [LICENSE](LICENSE).
+
+<sub>Developed as the degree project TT 2026-B059 at IPN ESCOM (Mexico).</sub>

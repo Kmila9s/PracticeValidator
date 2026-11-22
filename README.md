@@ -1,8 +1,19 @@
 # PracticeValidator
 
-CLI tool that grades every canonical solution shipped under `wwwroot/Practice/` against
-its own self-tests, so we can detect dud exercises (parse failures, broken solutions,
-or test cases that don't actually match the canonical answer) before students hit them.
+CLI tool that checks every practice shipped under `wwwroot/Practice/`, for every
+supported HDL language (a missing variant is a failure):
+
+1. **solution** — the canonical solution passes its own tests in Kmila's grader;
+2. **oracle** (v3.0.9) — Kmila and the language's reference simulator (GHDL 6 for VHDL)
+   agree on the graded outputs at the graded instants, running the solution under the
+   same stimulus (`Kmila.TestKit`: `PracticeOracle` builds a testbench from the very
+   `SimulationConfig` Kmila executes; the design is never modified). Disagreements must
+   be listed in `known-gaps.json` (ratchet: an unlisted one, or a listed one that agrees,
+   fails the run);
+3. **starter** — the starter does not pass unmodified.
+
+`dotnet run -c Release [-- --filter <substring>]`; exit 0 only when all three hold.
+The old `--audit-starters` mode is folded into the default run.
 
 ## Project: Kmila-9s
 
@@ -10,7 +21,10 @@ Part of **Kmila-9s** — *Aplicación Multiplataforma para el Aprendizaje y Depu
 Código VHDL sin Requerimiento de Hardware Físico* (TT 2026-B059, IPN ESCOM).
 
 **Author:** Ulrich Tamayo Daniel
-**Last verified:** 2026-05-09
+**Last verified:** 2026-08-03
+
+> **Docs sync 2026-09-24** — no functional change to this tool this cycle; the
+> 2026-09-23 feature batch (v1.27.0) is **app-only** (see `App/Kmila/README.md` §19).
 
 ---
 
@@ -25,7 +39,8 @@ Código VHDL sin Requerimiento de Hardware Físico* (TT 2026-B059, IPN ESCOM).
    `PracticeEvaluator` services that the runtime app uses, just wired to a plain
    filesystem opener instead of MAUI's content stream.
 3. Iterates over every entry in `manifest.json` (optionally filtered) and asks the
-   evaluator to grade `solution.vhdl` against its own test cases.
+   evaluator to grade each language variant's solution (manifest schema v2,
+   `variants.<lang>.solution`) against its own test cases. A missing variant is a failure.
 4. Prints a per-exercise verdict (`OK`, `BUILDERROR`, `WRONGANSWER`, `RUNTIMEERROR`,
    `LOAD-FAIL`, `THROW: <type>`) plus a final tally grouped by failure class.
 
@@ -64,7 +79,7 @@ dotnet build PracticeValidator
 
 - **`Practice/manifest.json`** — declares the list of exercises with their id,
   modality, and difficulty.
-- **`Practice/<modality>/<difficulty>/<id>/solution.vhdl`** — the canonical solution
+- **`Practice/<modality>/<difficulty>/<id>/<variants.<lang>.solution>`** (today `solution.vhdl`) — the canonical solution
   the validator grades.
 - **`Practice/<modality>/<difficulty>/<id>/tests.json`** — the test cases used by
   `PracticeEvaluator` for grading.
@@ -89,7 +104,7 @@ flowchart TD
     I --> J[catalog.GetAsync id]
     J --> K{Catalog<br/>build OK?}
     K -- no --> L[Record load-fail]
-    K -- yes --> M[evaluator.GradeAsync<br/>solution.vhdl]
+    K -- yes --> M[evaluator.GradeAsync<br/>solution per language]
     M --> N{Verdict.Kind}
     N -- Solved --> O[Record ok]
     N -- BuildError / RuntimeError / WrongAnswer --> P[Record verdict + first-fail detail]
@@ -116,10 +131,10 @@ flowchart TD
 
 | Symbol | Lines | Purpose |
 |---|---|---|
-| `Program` (class) | `Program.cs:23` | Static host class for the validator. |
-| `Program.Main` | `Program.cs:42` | Async entry point — orchestrates resolve → catalog/evaluator init → per-exercise grade → tally → exit code. |
-| `Program.ResolvePracticeRoot` | `Program.cs:158` | Walks up the directory tree looking for `App/Kmila/Kmila.Shared/wwwroot/Practice` (and a few alternative roots so the tool works from inside `App/Kmila/`). |
-| `Program.ValidationResult` (record) | `Program.cs:188` | Per-exercise grading outcome (`Id`, `Status`, optional `Detail`). |
+| `Program` (class) | `Program.cs:35` | Static host class for the validator. |
+| `Program.Main` | `Program.cs:51` | Async entry point — orchestrates resolve → catalog/evaluator init → per-exercise grade → tally → exit code. Accepts `--audit-starters` flag (`Program.cs:89`) that writes `audit-starters.md` (`Program.cs:269`) — a report of every starter exercise that passes without the student having to do anything. |
+| `Program.ResolvePracticeRoot` | `Program.cs:368` | Walks up the directory tree looking for `App/Kmila/Kmila.Shared/wwwroot/Practice` (and a few alternative roots so the tool works from inside `App/Kmila/`). |
+| `Program.ValidationResult` (record) | `Program.cs:397` | Per-exercise grading outcome (`Id`, `Status`, optional `Detail`). |
 
 The program uses `Microsoft.Extensions.Logging.Abstractions.NullLogger<T>` for both
 `PracticeCatalog` and `PracticeEvaluator` so the tool's stdout stays a clean,
@@ -129,7 +144,7 @@ parseable stream of validation lines.
 
 ```mermaid
 flowchart LR
-    Author[Exercise author<br/>edits manifest.json + solution.vhdl + tests.json]
+    Author[Exercise author<br/>edits manifest.json + solution/starter variants + tests.json]
     Validator[PracticeValidator CLI]
     Catalog[(PracticeCatalog)]
     Evaluator[(PracticeEvaluator)]
@@ -174,8 +189,8 @@ sequenceDiagram
     loop Por cada exercise
         CLI->>Cat: GetAsync(id)
         Cat-->>CLI: PracticeExercise (Solution + TestCases)
-        CLI->>Eval: GradeAsync(ex, ex.SolutionVhdl)
-        Eval->>PB: Build(SolutionVhdl)
+        CLI->>Eval: GradeAsync(ex, language, variant.Solution)
+        Eval->>PB: Build(variant.Solution)
         alt Build error
             PB-->>Eval: BuildPhaseException
             Eval-->>CLI: Verdict BuildError

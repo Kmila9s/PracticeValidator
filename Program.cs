@@ -1,46 +1,46 @@
 // Practice content validator.
 //
-// Walks every exercise listed in wwwroot/Practice/manifest.json, asks the
-// PracticeEvaluator to grade the canonical solution against its own test
-// cases, and reports any exercise where the solution itself doesn't pass.
+// For every exercise in wwwroot/Practice/manifest.json and every supported HDL
+// language (a missing variant is a failure, never a skip):
+//   1. solution  — the canonical solution passes its own tests in Kmila (the
+//                  grader the editor uses);
+//   2. oracle    — Kmila and the language's reference simulator (GHDL for VHDL),
+//                  running the solution under the same stimulus (a generated
+//                  testbench), agree on the graded outputs at the graded instants;
+//                  failures must be listed in known-gaps.json (ratchet);
+//   3. starter   — the starter does NOT pass unmodified (otherwise the student
+//                  could finish the lesson without editing).
 //
-// A green run means: every solution.vhdl parses, simulates, and produces
-// outputs that match its own self-grader. A red run flags exercises where
-// the simulator chokes (parse / runtime), the test-case inputs are wrong,
-// or the canonical solution doesn't actually meet the spec — exactly the
-// duds we don't want students hitting first.
-//
-// Usage:  dotnet run --project App/Kmila/Tools/PracticeValidator
-// Optional: pass --filter <substring> to limit the run to ids matching the
-// substring, useful for re-running just the previously failing ones.
+// Usage:  dotnet run --project PracticeValidator [--filter <substring>]
 
+using Kmila.Frontend;
 using Kmila.Shared.Models.Practice;
 using Kmila.Shared.Services.Practice;
+using Kmila.TestKit.Cases;
+using Kmila.TestKit.Practice;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Kmila.Tools.PracticeValidator;
 
 /// <summary>
-/// Entry point of the Practice content validator CLI tool.
-/// Iterates over every exercise declared in <c>wwwroot/Practice/manifest.json</c> and uses
-/// <see cref="PracticeEvaluator"/> to grade each canonical solution against its own
-/// self-tests, returning a non-zero exit code if any exercise fails.
+/// Entry point of the Practice content validator: solution, external oracle and starter
+/// checks for every exercise and supported language (see the file header).
 /// </summary>
 internal static class Program
 {
     /// <summary>
-    /// Program entry point. Resolves the practice content root, builds the catalog
-    /// + evaluator, runs every exercise (optionally filtered by id substring), prints
-    /// a per-exercise verdict and a final tally grouped by failure class.
+    /// Program entry point. Resolves the practice content root, builds the catalog and
+    /// evaluator, checks every exercise (optionally filtered by id substring) and prints
+    /// one line per exercise and language plus a final tally.
     /// </summary>
     /// <param name="args">
     /// Command-line arguments. Supports the optional flag <c>--filter &lt;substring&gt;</c>
     /// to limit the run to exercise ids containing the substring (case-insensitive).
     /// </param>
     /// <returns>
-    /// <c>0</c> if every exercise was graded as <see cref="PracticeVerdictKind.Solved"/>,
-    /// <c>1</c> if at least one exercise failed grading, or <c>2</c> if the practice
-    /// content root could not be located on disk.
+    /// <c>0</c> when every solution passes, every starter fails unmodified and the oracle
+    /// agrees with known-gaps.json; <c>1</c> otherwise; <c>2</c> if the practice content
+    /// root could not be located on disk.
     /// </returns>
     private static async Task<int> Main(string[] args)
     {
@@ -52,150 +52,114 @@ internal static class Program
         }
         Console.WriteLine($"[Validator] Practice root: {practiceRoot}");
 
-        // PracticeCatalog reads everything via a stream delegate keyed by
-        // path-relative-to-Practice-root. We give it the obvious file-system
-        // implementation; same paths the manifest declares.
+        // The catalog reads "Practice/<path>" through a stream delegate; we are rooted at Practice/.
         var catalog = new PracticeCatalog(
             openFileAsync: async path =>
             {
-                // Catalog uses paths like "Practice/manifest.json" and
-                // "Practice/m1-from-zero/easy/01-half-adder/solution.vhdl".
-                // Strip the leading "Practice/" since we already rooted there.
-                var rel = path.StartsWith("Practice/", StringComparison.Ordinal)
-                    ? path["Practice/".Length..]
-                    : path;
+                var rel = path.StartsWith("Practice/", StringComparison.Ordinal) ? path["Practice/".Length..] : path;
                 var full = Path.Combine(practiceRoot, rel.Replace('/', Path.DirectorySeparatorChar));
-                if (!File.Exists(full))
-                    throw new FileNotFoundException($"Practice asset not found: {path}");
+                if (!File.Exists(full)) throw new FileNotFoundException($"Practice asset not found: {path}");
                 return File.OpenRead(full);
             },
             logger: NullLogger<PracticeCatalog>.Instance);
-
         var evaluator = new PracticeEvaluator(NullLogger<PracticeEvaluator>.Instance);
 
         var meta = await catalog.ListAsync();
         var filter = args.SkipWhile(a => a != "--filter").Skip(1).FirstOrDefault();
-        if (filter != null)
-        {
-            meta = meta.Where(m => m.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
-        Console.WriteLine($"[Validator] Manifest has {meta.Count} exercises (filter='{filter ?? "(none)"}').");
+        if (filter != null) meta = meta.Where(m => m.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+        Console.WriteLine($"[Validator] {meta.Count} exercises (filter='{filter ?? "(none)"}') × {HdlLanguages.Supported.Count} language(s).");
         Console.WriteLine();
 
-        var results = new List<ValidationResult>();
-        int idx = 0;
+        var failures = new List<string>();
+        var oracleRuns = new List<(string Case, string Variant, bool Pass)>();
+        int solutions = 0, oracles = 0, starters = 0, idx = 0;
         foreach (var m in meta)
         {
             idx++;
-            Console.Write($"[{idx,3}/{meta.Count,3}] {m.Id,-32} ({m.Modality}/{m.Difficulty})  ... ");
-
             var ex = await catalog.GetAsync(m.Id);
             if (ex == null)
             {
-                Console.WriteLine("LOAD-FAIL");
-                results.Add(new ValidationResult(m.Id, "load-fail", "Catalog couldn't build the exercise"));
+                Console.WriteLine($"[{idx,3}/{meta.Count,3}] {m.Id,-32} LOAD-FAIL");
+                failures.Add($"{m.Id}: catalog couldn't build the exercise");
                 continue;
             }
+            foreach (var language in HdlLanguages.Supported)
+            {
+                Console.Write($"[{idx,3}/{meta.Count,3}] {m.Id,-32} [{language.Id}] ");
+                if (ex.Variants.For(language) is not { } variant)
+                {
+                    Console.WriteLine("MISSING-VARIANT");
+                    failures.Add($"{m.Id} [{language.Id}]: no {language.DisplayName} variant");
+                    continue;
+                }
+                var solution = await GradeAsync(evaluator, ex, language, variant.Solution);
+                if (solution.Kind == PracticeVerdictKind.Solved) solutions++;
+                else failures.Add($"{m.Id} [{language.Id}] solution: {Describe(solution)}");
 
-            // Grade the canonical solution against its own tests. A correct
-            // exercise should come back Solved on every test case.
-            try
-            {
-                var verdict = await evaluator.GradeAsync(ex, ex.SolutionVhdl);
-                if (verdict.Kind == PracticeVerdictKind.Solved)
-                {
-                    Console.WriteLine($"OK  ({verdict.TotalDurationMs} ms)");
-                    results.Add(new ValidationResult(m.Id, "ok", null));
-                }
-                else
-                {
-                    var firstFail = verdict.TestResults.FirstOrDefault(r => !r.Passed);
-                    var detail = verdict.Kind switch
-                    {
-                        PracticeVerdictKind.BuildError => $"build-error: {verdict.BuildErrorMessage}",
-                        PracticeVerdictKind.RuntimeError => $"runtime: {(firstFail?.ErrorClass ?? "unknown")}",
-                        PracticeVerdictKind.WrongAnswer => firstFail == null
-                            ? "wrong-answer (no fail row?)"
-                            : $"WA at {firstFail.TestCaseId}: {firstFail.FirstMismatchSignal}@{firstFail.FirstMismatchTimeNs}ns " +
-                              $"actual={firstFail.ActualAtMismatch} expected={firstFail.ExpectedAtMismatch}",
-                        _ => verdict.Kind.ToString()
-                    };
-                    Console.WriteLine($"{verdict.Kind.ToString().ToUpperInvariant()}");
-                    Console.WriteLine($"      └─ {detail}");
-                    results.Add(new ValidationResult(m.Id, verdict.Kind.ToString(), detail));
-                }
-            }
-            catch (Exception ex2)
-            {
-                Console.WriteLine($"THROW: {ex2.GetType().Name}: {ex2.Message}");
-                results.Add(new ValidationResult(m.Id, "throw", $"{ex2.GetType().Name}: {ex2.Message}"));
+                var oracle = await PracticeOracle.CheckAsync(ex, language);
+                bool agree = oracle.All(o => o.Pass);
+                if (agree) oracles++;
+                oracleRuns.Add((m.Id, language.Id, agree));
+
+                var starter = await GradeAsync(evaluator, ex, language, variant.Starter);
+                bool starterFails = starter.Kind != PracticeVerdictKind.Solved;
+                if (starterFails) starters++;
+                else failures.Add($"{m.Id} [{language.Id}] starter: passes without modification");
+
+                Console.WriteLine($"solution={(solution.Kind == PracticeVerdictKind.Solved ? "ok" : solution.Kind.ToString())}  " +
+                    $"oracle={(agree ? "ok" : "DIFF")}  starter={(starterFails ? "fails-as-intended" : "PASSES")}");
+                foreach (var o in oracle.Where(o => !o.Pass))
+                    Console.WriteLine($"      └─ {o.TestId}: {o.Error ?? string.Join("; ", o.Diff!.Where(d => !d.Equal).Select(d => d.Describe("reference", "kmila")))}");
             }
         }
 
+        // The oracle is ratcheted: a disagreement must be a listed gap, and a listed gap that agrees is stale.
+        var (violations, _) = KnownGaps.Apply(KnownGaps.Load(KnownGapsPath()), oracleRuns);
+        failures.AddRange(violations);
+
+        int total = oracleRuns.Count;
         Console.WriteLine();
         Console.WriteLine("════════════════════════════════════════════════════════════");
-        var ok    = results.Count(r => r.Status == "ok");
-        var bad   = results.Count - ok;
-        Console.WriteLine($"  Total:   {results.Count}");
-        Console.WriteLine($"  ✓ OK:    {ok}");
-        Console.WriteLine($"  ✗ Bad:   {bad}");
+        Console.WriteLine($"  Variants checked:            {total}");
+        Console.WriteLine($"  ✓ Solutions pass:            {solutions}/{total}");
+        Console.WriteLine($"  ✓ Agree with the reference:  {oracles}/{total}  (rest listed in known-gaps.json)");
+        Console.WriteLine($"  ✓ Starters fail unmodified:  {starters}/{total}");
+        Console.WriteLine($"  ✗ Problems:                  {failures.Count}");
         Console.WriteLine("════════════════════════════════════════════════════════════");
-
-        if (bad > 0)
-        {
-            Console.WriteLine();
-            Console.WriteLine("Failures, grouped by class:");
-            foreach (var grp in results.Where(r => r.Status != "ok").GroupBy(r => r.Status).OrderBy(g => g.Key))
-            {
-                Console.WriteLine($"  [{grp.Key}] — {grp.Count()} exercise(s):");
-                foreach (var r in grp)
-                {
-                    Console.WriteLine($"    • {r.Id,-32} {r.Detail}");
-                }
-            }
-        }
-
-        return bad == 0 ? 0 : 1;
+        foreach (var f in failures) Console.WriteLine($"    • {f}");
+        return failures.Count == 0 ? 0 : 1;
     }
 
-    /// <summary>
-    /// Searches up the directory tree for <c>App/Kmila/Kmila.Shared/wwwroot/Practice</c>,
-    /// so the tool works from any working directory (repo root, App/Kmila, or the
-    /// validator's own folder).
-    /// </summary>
-    /// <returns>
-    /// The absolute path to the resolved Practice content directory, or <c>null</c>
-    /// if no candidate directory was found while walking up to the filesystem root.
-    /// </returns>
-    private static string? ResolvePracticeRoot()
+    /// <summary>Grades <paramref name="code"/> with the editor's grader; a throw becomes a runtime-error verdict.</summary>
+    private static async Task<PracticeAttemptVerdict> GradeAsync(PracticeEvaluator evaluator, PracticeExercise ex, HdlLanguage language, string code)
     {
-        var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
-        while (dir != null)
+        try { return await evaluator.GradeAsync(ex, language, code); }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or IOException)
         {
-            var candidate = Path.Combine(dir.FullName, "App", "Kmila", "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return candidate;
-            // Also handle running from inside App/Kmila/Tools/PracticeValidator/
-            candidate = Path.Combine(dir.FullName, "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return candidate;
-            candidate = Path.Combine(dir.FullName, "..", "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return Path.GetFullPath(candidate);
-            candidate = Path.Combine(dir.FullName, "..", "..", "Kmila.Shared", "wwwroot", "Practice");
-            if (Directory.Exists(candidate)) return Path.GetFullPath(candidate);
-            dir = dir.Parent;
+            return new PracticeAttemptVerdict(PracticeVerdictKind.RuntimeError, ex.Id, DateTime.UtcNow, 0, 0, e.Message, null, []);
         }
-        return null;
     }
 
-    /// <summary>
-    /// Aggregated outcome of grading a single practice exercise during a validation run.
-    /// </summary>
-    /// <param name="Id">Stable exercise identifier as declared in the practice manifest.</param>
-    /// <param name="Status">
-    /// Outcome bucket — <c>"ok"</c> for a fully solved exercise, otherwise one of
-    /// <c>"load-fail"</c>, <c>"throw"</c>, or the lowercased
-    /// <see cref="PracticeVerdictKind"/> name (e.g. <c>"BuildError"</c>, <c>"WrongAnswer"</c>).
-    /// </param>
-    /// <param name="Detail">Free-form human-readable detail about the failure, or <c>null</c> when <paramref name="Status"/> is <c>"ok"</c>.</param>
-    private record ValidationResult(string Id, string Status, string? Detail);
+    private static string Describe(PracticeAttemptVerdict v)
+    {
+        var first = v.TestResults.FirstOrDefault(r => !r.Passed);
+        return v.Kind switch
+        {
+            PracticeVerdictKind.BuildError => $"build-error: {v.BuildErrorMessage}",
+            PracticeVerdictKind.WrongAnswer when first != null =>
+                $"WA at {first.TestCaseId}: {first.FirstMismatchSignal}@{first.FirstMismatchTimeNs}ns actual={first.ActualAtMismatch} expected={first.ExpectedAtMismatch}",
+            _ => $"{v.Kind}: {first?.ErrorClass ?? v.BuildErrorMessage}",
+        };
+    }
+
+    /// <summary>The oracle's known gaps, next to this project.</summary>
+    private static string KnownGapsPath()
+    {
+        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir != null; dir = dir.Parent)
+            if (File.Exists(Path.Combine(dir.FullName, "PracticeValidator.csproj"))) return Path.Combine(dir.FullName, "known-gaps.json");
+        return Path.Combine(Directory.GetCurrentDirectory(), "known-gaps.json");
+    }
+
+    /// <summary>The Practice content folder of the source checkout (see <c>SharedContentPaths</c>), or null.</summary>
+    private static string? ResolvePracticeRoot() => Kmila.Shared.Services.SharedContentPaths.Find("Practice");
 }

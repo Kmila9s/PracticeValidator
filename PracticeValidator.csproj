@@ -11,11 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The validator references the app's Kmila.Shared (net9.0 head) for
-         PracticeCatalog, PracticeEvaluator, models, and the simulation
-         pipeline they wrap. Path is relative to this csproj at the repo
-         top level. -->
-    <ProjectReference Include="../App/Kmila/Kmila.Shared/Kmila.Shared.csproj" />
+    <!-- The test kit (practice oracle: harness generator + reference simulator)
+         and, through it, Kmila.Shared (PracticeCatalog, PracticeEvaluator).
+         Path relative to this csproj at the repo top level. -->
+    <ProjectReference Include="../App/Kmila/Kmila.TestKit/Kmila.TestKit.csproj" />
   </ItemGroup>
 
 </Project>

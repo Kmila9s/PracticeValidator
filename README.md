@@ -1,8 +1,19 @@
 # PracticeValidator
 
-CLI tool that grades every canonical solution shipped under `wwwroot/Practice/` against
-its own self-tests, so we can detect dud exercises (parse failures, broken solutions,
-or test cases that don't actually match the canonical answer) before students hit them.
+CLI tool that checks every practice shipped under `wwwroot/Practice/`, for every
+supported HDL language (a missing variant is a failure):
+
+1. **solution** — the canonical solution passes its own tests in Kmila's grader;
+2. **oracle** (v3.0.9) — Kmila and the language's reference simulator (GHDL 6 for VHDL)
+   agree on the graded outputs at the graded instants, running the solution under the
+   same stimulus (`Kmila.TestKit`: `PracticeOracle` builds a testbench from the very
+   `SimulationConfig` Kmila executes; the design is never modified). Disagreements must
+   be listed in `known-gaps.json` (ratchet: an unlisted one, or a listed one that agrees,
+   fails the run);
+3. **starter** — the starter does not pass unmodified.
+
+`dotnet run -c Release [-- --filter <substring>]`; exit 0 only when all three hold.
+The old `--audit-starters` mode is folded into the default run.
 
 ## Project: Kmila-9s
 

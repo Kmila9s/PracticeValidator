@@ -1,9 +1,1 @@
-[
-  {
-    "case": "m1-arbiter-rr",
-    "variant": "vhdl",
-    "category": "semantics",
-    "reason": "G87 v := (others => c) en el cuerpo de un proceso guarda el marcador de texto y la escritura por bit lo corrompe",
-    "since": "2026-11-21"
-  }
-]
+[]
